@@ -34,11 +34,10 @@ Route::post('/logout', function (Request $request) {
 // ----- Authenticated portal pages (Dev B roles) -----
 Route::middleware('auth')->group(function () {
     // Caretaker
-    Route::view('/caretaker/dashboard', 'caretaker.dashboard')->name('caretaker.dashboard');
-    Route::view('/caretaker/tasks', 'caretaker.tasks')->name('caretaker.tasks');
-    Route::view('/caretaker/maintenance', 'caretaker.maintenance')->name('caretaker.maintenance');
-    Route::view('/caretaker/payments', 'caretaker.payments')->name('caretaker.payments');
-
+   Route::view('/caretaker/dashboard', 'caretaker.dashboard')->name('caretaker.dashboard');
+Route::view('/caretaker/tasks', 'caretaker.tasks')->name('caretaker.tasks.index');
+Route::view('/caretaker/maintenance', 'caretaker.maintenance')->name('caretaker.maintenance.index');
+Route::view('/caretaker/payments', 'caretaker.payments')->name('caretaker.payments.index');
     // Tenant
     Route::view('/tenant/dashboard', 'tenant.dashboard')->name('tenant.dashboard');
     Route::view('/tenant/unit', 'tenant.unit')->name('tenant.unit');

@@ -12,6 +12,10 @@ class Unit extends Model
 {
     use SoftDeletes;
 
+public const STATUS_AVAILABLE = 'available';
+    public const STATUS_OCCUPIED = 'occupied';
+    public const STATUS_MAINTENANCE = 'maintenance';
+    public const STATUS_UNAVAILABLE = 'unavailable';
     protected $fillable = [
         'property_id',
         'unit_number',

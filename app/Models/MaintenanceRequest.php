@@ -8,7 +8,26 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class MaintenanceRequest extends Model
 {
+    public const CATEGORY_PLUMBING = 'plumbing';
+    public const CATEGORY_ELECTRICAL = 'electrical';
+    public const CATEGORY_STRUCTURAL = 'structural';
+    public const CATEGORY_APPLIANCE = 'appliance';
+    public const CATEGORY_PEST = 'pest';
+    public const CATEGORY_SECURITY = 'security';
+    public const CATEGORY_OTHER = 'other';
+
+    public const PRIORITY_LOW = 'low';
+    public const PRIORITY_MEDIUM = 'medium';
+    public const PRIORITY_HIGH = 'high';
+    public const PRIORITY_EMERGENCY = 'emergency';
+
+    public const STATUS_SUBMITTED = 'submitted';
+    public const STATUS_ASSIGNED = 'assigned';
+    public const STATUS_IN_PROGRESS = 'in_progress';
+    public const STATUS_RESOLVED = 'resolved';
+    public const STATUS_REJECTED = 'rejected';
     protected $fillable = [
+        
         'tenant_id',
         'unit_id',
         'property_id',
