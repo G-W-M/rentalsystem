@@ -2,28 +2,29 @@
 
 namespace App\Http\Requests\Landlord;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ApproveMaintenanceRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return $this->user() !== null
+            && in_array($this->user()->role, ['landlord', 'admin'], true);
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            //
+            'cost_estimate' => ['sometimes', 'nullable', 'numeric', 'min:0'],
+            'is_major'      => ['sometimes', 'boolean'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'cost_estimate.numeric' => 'The cost estimate must be a number.',
+            'cost_estimate.min'     => 'The cost estimate cannot be negative.',
         ];
     }
 }
