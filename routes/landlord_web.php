@@ -3,15 +3,8 @@
 use Illuminate\Support\Facades\Route;
 
 /*
-|--------------------------------------------------------------------------
-| Landlord Web Routes — Developer A domain
-|--------------------------------------------------------------------------
-| MERGE-SAFE partial. Load it from bootstrap/app.php's web group, or append a
-| require to routes/web.php:
-|
-|     require base_path('routes/landlord_web.php');
-|
-| Named routes here back the shared landlord layout's route() calls.
+| Landlord Web Routes — Developer A domain.
+| Merge-safe partial, loaded separately from bootstrap/app.php.
 */
 
 Route::middleware('auth')->group(function () {
@@ -23,4 +16,5 @@ Route::middleware('auth')->group(function () {
     Route::view('/landlord/caretakers', 'landlord.caretakers')->name('landlord.caretakers');
     Route::view('/landlord/payments', 'landlord.payments')->name('landlord.payments.index');
     Route::view('/landlord/maintenance', 'landlord.maintenance')->name('landlord.maintenance.index');
+    Route::view('/landlord/settings', 'landlord.settings.settings')->name('landlord.settings');
 });
