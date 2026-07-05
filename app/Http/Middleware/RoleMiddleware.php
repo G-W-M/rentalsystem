@@ -6,24 +6,27 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Usage on routes:  ->middleware('role:landlord,admin')
- * Register in bootstrap/app.php (Laravel 11) withMiddleware():
- *   $middleware->alias(['role' => \App\Http\Middleware\RoleMiddleware::class]);
- */
 class RoleMiddleware
 {
+    /**
+     * Usage on routes: ->middleware('role:landlord,admin')
+     * Alias 'role' is registered in bootstrap/app.php.
+     */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         $user = $request->user();
 
-        if (! $user) {
+        if ($user === null) {
             return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        if (! $user->is_active) {
+            return response()->json(['message' => 'Account inactive.'], 403);
         }
 
         if (! in_array($user->role, $roles, true)) {
             return response()->json([
-                'message' => 'Forbidden. This action requires one of: ' . implode(', ', $roles),
+                'message' => 'Forbidden. Requires one of the roles: ' . implode(', ', $roles),
             ], 403);
         }
 
