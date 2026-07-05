@@ -1,0 +1,73 @@
+/* ========================================
+   RESPONSIVE.CSS - Responsive Utilities
+   ======================================== */
+
+/* Mobile-First Cards */
+.mobile-card {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-3);
+  margin-bottom: var(--spacing-3);
+  box-shadow: var(--shadow-md);
+}
+
+/* Hide on specific screens */
+.hide-mobile { display: none !important; }
+.hide-tablet { display: none !important; }
+.hide-desktop { display: none !important; }
+
+/* Responsive Container */
+.container-fluid {
+  padding-left: var(--spacing-4);
+  padding-right: var(--spacing-4);
+}
+
+/* Responsive Grid Extensions */
+@media (max-width: 575.98px) {
+  .hide-mobile { display: none !important; }
+  .show-mobile { display: block !important; }
+  .container-fluid {
+    padding-left: var(--spacing-3);
+    padding-right: var(--spacing-3);
+  }
+  .brand-chip {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+  .brand-title {
+    font-size: 1rem;
+  }
+  .metric .icon {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 991.98px) {
+  .hide-tablet { display: none !important; }
+  .show-tablet { display: block !important; }
+}
+
+@media (min-width: 992px) {
+  .hide-desktop { display: none !important; }
+  .show-desktop { display: block !important; }
+}
+
+/* Print Responsive */
+@media print {
+  .sidebar { display: none !important; }
+  .main-content { margin-left: 0 !important; padding: var(--spacing-3) !important; }
+  .no-print { display: none !important; }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #1a1a2e;
+    --text-color: #e0e0e0;
+    --card-bg: #16213e;
+    --border-color: #2d3748;
+  }
+}

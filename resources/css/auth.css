@@ -1,0 +1,165 @@
+/* ========================================
+   AUTH.CSS - Authentication Pages
+   ======================================== */
+
+/* ===== Auth Background with Photo ===== */
+/* ===== Auth Background with Photo ===== */
+.auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: url('../images/bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding: var(--spacing-4);
+    position: relative;
+}
+
+/* Dark overlay for readability */
+.auth-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 82, 54, 0.75); /* Using your primary-dark with opacity */
+    backdrop-filter: blur(4px); /* Optional blur effect */
+    z-index: 0;
+}
+
+.auth-wrapper .auth-card {
+    position: relative;
+    z-index: 1;
+}
+.auth-card {
+  max-width: 440px;
+  width: 100%;
+  padding: var(--spacing-5);
+  background: #fff;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-2xl);
+}
+
+.auth-card .auth-header {
+  text-align: center;
+  margin-bottom: var(--spacing-5);
+}
+
+.auth-card .auth-header .logo {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-lg);
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 auto var(--spacing-3);
+}
+
+.auth-card .auth-header h3 {
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 0.25rem;
+}
+
+.auth-card .auth-header p {
+  color: var(--gray-500);
+  font-size: 0.95rem;
+}
+
+.auth-card .auth-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  margin: var(--spacing-4) 0;
+  color: var(--gray-500);
+}
+
+.auth-card .auth-divider::before,
+.auth-card .auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--gray-200);
+}
+
+.auth-card .social-login {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-3);
+}
+
+.auth-card .social-login .btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  font-weight: 500;
+}
+
+.auth-card .auth-footer {
+  text-align: center;
+  margin-top: var(--spacing-4);
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--gray-200);
+}
+
+.auth-card .auth-footer a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.auth-card .auth-footer a:hover {
+  text-decoration: underline;
+}
+
+
+/* Responsive Auth */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: var(--spacing-4);
+  }
+  .auth-card .social-login {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Auth Logo Circle ===== */
+.auth-logo-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 1rem;
+    border: 3px solid var(--primary-light);
+    box-shadow: 0 0 0 4px rgba(5, 82, 54, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    flex-shrink: 0;
+}
+
+.auth-logo-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Alternative: Using background-image */
+.auth-logo-circle-bg {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-image: url('../images/logo.jpg');
+    background-size: cover;
+    background-position: center;
+    border: 3px solid var(--primary-light);
+    box-shadow: 0 0 0 4px rgba(5, 82, 54, 0.1);
+    margin: 0 auto 1rem;
+}

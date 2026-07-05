@@ -1,9 +1,394 @@
-@import 'tailwindcss';
+/* ========================================
+   APP.CSS - Core Styles & Utilities
+   Yeti Bootstrap Theme Customization
+   Colors: #055236, #7FA48E, #2D4C39, #80B9B1, #6C27DA
+   ======================================== */
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
+   /* ===== Global Background ===== */
+body.bg-photo {
+    background-image: url('../images/bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+}
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+body.bg-photo::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 82, 54, 0.7);
+    z-index: -1;
+}
+
+/* Gradient overlay alternative */
+body.bg-photo-gradient {
+    background:
+        linear-gradient(135deg, rgba(5, 82, 54, 0.8), rgba(45, 76, 57, 0.6)),
+        url('../images/bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+/* ----- CSS Variables (Theme Colors) ----- */
+:root {
+  /* Primary Palette */
+  --primary-dark: #055236;
+  --primary: #2D4C39;
+  --primary-light: #7FA48E;
+  --accent: #80B9B1;
+  --accent-purple: #6C27DA;
+
+  /* Semantic Colors */
+  --success: #28a745;
+  --danger: #dc3545;
+  --warning: #ffc107;
+  --info: #17a2b8;
+
+  /* Neutrals */
+  --gray-50: #f8f9fa;
+  --gray-100: #f0f0f0;
+  --gray-200: #e9ecef;
+  --gray-300: #ced4da;
+  --gray-400: #adb5bd;
+  --gray-500: #6c757d;
+  --gray-600: #6b7280;
+  --gray-700: #495057;
+  --gray-800: #2d3748;
+  --gray-900: #17202a;
+
+  /* Spacing */
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 1rem;
+  --spacing-4: 1.5rem;
+  --spacing-5: 2rem;
+  --spacing-6: 3rem;
+
+  /* Shadows */
+  --shadow-sm: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+  --shadow-md: 0 0.5rem 1rem rgba(0,0,0,0.1);
+  --shadow-lg: 0 0.75rem 1.5rem rgba(31, 54, 72, 0.08);
+  --shadow-xl: 0 1rem 2.5rem rgba(31, 54, 72, 0.15);
+  --shadow-2xl: 0 2rem 4rem rgba(0,0,0,0.2);
+
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+}
+
+/* ----- Base Reset & Body ----- */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Open Sans', 'Segoe UI', sans-serif;
+  color: var(--gray-900);
+  background: var(--gray-50);
+}
+
+/* ----- Typography Utilities ----- */
+.text-xxs { font-size: 0.65rem; }
+.text-xs { font-size: 0.75rem; }
+.text-sm { font-size: 0.875rem; }
+.text-base { font-size: 1rem; }
+.text-lg { font-size: 1.125rem; }
+.text-xl { font-size: 1.25rem; }
+.text-2xl { font-size: 1.5rem; }
+.text-3xl { font-size: 1.875rem; }
+.text-4xl { font-size: 2.25rem; }
+
+.font-light { font-weight: 300; }
+.font-normal { font-weight: 400; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+
+/* ----- Spacing Utilities ----- */
+.gap-1 { gap: var(--spacing-1); }
+.gap-2 { gap: var(--spacing-2); }
+.gap-3 { gap: var(--spacing-3); }
+.gap-4 { gap: var(--spacing-4); }
+.gap-5 { gap: var(--spacing-5); }
+
+.m-0 { margin: 0; }
+.m-1 { margin: var(--spacing-1); }
+.m-2 { margin: var(--spacing-2); }
+.m-3 { margin: var(--spacing-3); }
+.m-4 { margin: var(--spacing-4); }
+.m-5 { margin: var(--spacing-5); }
+
+.p-0 { padding: 0; }
+.p-1 { padding: var(--spacing-1); }
+.p-2 { padding: var(--spacing-2); }
+.p-3 { padding: var(--spacing-3); }
+.p-4 { padding: var(--spacing-4); }
+.p-5 { padding: var(--spacing-5); }
+
+/* ----- Background Colors (Theme) ----- */
+.bg-primary { background: var(--primary); }
+.bg-primary-light { background: #e8f0ec; }
+.bg-primary-dark { background: var(--primary-dark); }
+.bg-primary-gradient {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+}
+.bg-accent { background: var(--accent); }
+.bg-accent-purple { background: var(--accent-purple); }
+
+.bg-success-light { background: #d4edda; }
+.bg-danger-light { background: #f8d7da; }
+.bg-warning-light { background: #fff3cd; }
+.bg-info-light { background: #d1ecf1; }
+.bg-gray-light { background: var(--gray-50); }
+.bg-gray-100 { background: var(--gray-100); }
+.bg-white { background: #ffffff; }
+
+/* ----- Text Colors (Theme) ----- */
+.text-primary { color: var(--primary); }
+.text-primary-dark { color: var(--primary-dark); }
+.text-primary-light { color: var(--primary-light); }
+.text-accent { color: var(--accent); }
+.text-accent-purple { color: var(--accent-purple); }
+
+.text-success { color: var(--success); }
+.text-danger { color: var(--danger); }
+.text-warning { color: var(--warning); }
+.text-info { color: var(--info); }
+
+.text-gray-500 { color: var(--gray-500); }
+.text-gray-600 { color: var(--gray-600); }
+.text-gray-700 { color: var(--gray-700); }
+.text-gray-800 { color: var(--gray-800); }
+.text-gray-900 { color: var(--gray-900); }
+
+/* ----- Border Utilities ----- */
+.border { border: 1px solid var(--gray-200); }
+.border-2 { border-width: 2px; }
+.border-3 { border-width: 3px; }
+.border-primary { border-color: var(--primary); }
+.border-accent { border-color: var(--accent); }
+.border-gray { border-color: var(--gray-200); }
+
+.rounded { border-radius: var(--radius-md); }
+.rounded-sm { border-radius: var(--radius-sm); }
+.rounded-md { border-radius: var(--radius-md); }
+.rounded-lg { border-radius: var(--radius-lg); }
+.rounded-xl { border-radius: var(--radius-xl); }
+.rounded-full { border-radius: var(--radius-full); }
+
+/* ----- Shadow Utilities ----- */
+.shadow-sm { box-shadow: var(--shadow-sm); }
+.shadow-md { box-shadow: var(--shadow-md); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+.shadow-xl { box-shadow: var(--shadow-xl); }
+.shadow-2xl { box-shadow: var(--shadow-2xl); }
+
+/* ----- Flex Utilities ----- */
+.flex { display: flex; }
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.flex-column { flex-direction: column; }
+.flex-wrap { flex-wrap: wrap; }
+.flex-1 { flex: 1; }
+
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.items-end { align-items: flex-end; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.justify-end { justify-content: flex-end; }
+
+/* ----- Grid Utilities ----- */
+.grid { display: grid; }
+.grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* ----- Width & Height ----- */
+.w-full { width: 100%; }
+.w-auto { width: auto; }
+.w-0 { width: 0; }
+.w-50 { width: 50%; }
+.w-33 { width: 33.333%; }
+.w-25 { width: 25%; }
+
+.h-full { height: 100%; }
+.h-auto { height: auto; }
+.min-h-100 { min-height: 100%; }
+.min-h-screen { min-height: 100vh; }
+
+/* ----- Cursor & User Select ----- */
+.cursor-pointer { cursor: pointer; }
+.cursor-not-allowed { cursor: not-allowed; }
+.select-none { user-select: none; }
+
+/* ----- Transitions & Animations ----- */
+.transition-all {
+  transition: all 0.3s ease;
+}
+.transition-transform {
+  transition: transform 0.3s ease;
+}
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+}
+
+/* ----- Overflow & Z-Index ----- */
+.overflow-hidden { overflow: hidden; }
+.overflow-auto { overflow: auto; }
+.overflow-y-auto { overflow-y: auto; }
+.overflow-x-auto { overflow-x: auto; }
+
+.z-1 { z-index: 1; }
+.z-10 { z-index: 10; }
+.z-50 { z-index: 50; }
+.z-100 { z-index: 100; }
+
+/* ----- Opacity ----- */
+.opacity-0 { opacity: 0; }
+.opacity-50 { opacity: 0.5; }
+.opacity-75 { opacity: 0.75; }
+.opacity-100 { opacity: 1; }
+
+/* ----- Yeti Bootstrap Overrides ----- */
+.btn-primary {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+.btn-outline-primary {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.btn-outline-primary:hover {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.navbar {
+  background: var(--primary-dark) !important;
+}
+
+/* ----- Print Styles ----- */
+@media print {
+  .no-print { display: none !important; }
+  .card { box-shadow: none !important; border: 1px solid var(--gray-200) !important; }
+}
+
+/* ----- Accessibility ----- */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+  .card, .panel, .metric {
+    border: 2px solid CanvasText;
+  }
+  .btn { border: 2px solid CanvasText; }
+}
+
+/* ===== Navbar Logo Circle ===== */
+.navbar-logo-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.navbar-logo-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ===== Reusable Sizing Utilities ===== */
+.progress-w-150 {
+  width: 150px;
+}
+
+.progress-h-8 {
+  height: 8px;
+}
+
+.icon-circle-36 {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-square-60 {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.avatar-120 {
+  width: 120px;
+  height: 120px;
+  font-size: 48px;
+  font-weight: 700;
+}
+
+.avatar-60 {
+  width: 60px;
+  height: 60px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.avatar-32 {
+  width: 32px;
+  height: 32px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.property-image-placeholder {
+  background: var(--gray-200);
+}
+
+.icon-opacity-50 {
+  opacity: 0.5;
 }

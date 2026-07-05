@@ -1,0 +1,194 @@
+/* ========================================
+   TABLE.CSS - Table Components
+   ======================================== */
+
+.table-container {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.table-container .table {
+  margin-bottom: 0;
+}
+
+.table-container .table thead th {
+  background: var(--gray-50);
+  border-bottom: 2px solid var(--gray-200);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--gray-700);
+  padding: var(--spacing-3) var(--spacing-4);
+}
+
+.table-container .table tbody td {
+  padding: var(--spacing-3) var(--spacing-4);
+  vertical-align: middle;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.table-container .table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.table-container .table tbody tr:hover {
+  background: var(--gray-50);
+}
+
+/* Table Actions */
+.table-actions .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+}
+
+.table-actions .btn-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+}
+
+/* Status Indicators */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-indicator .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-indicator.active {
+  background: #d4edda;
+  color: #155724;
+}
+.status-indicator.active .dot { background: var(--success); }
+
+.status-indicator.inactive {
+  background: #f8d7da;
+  color: #721c24;
+}
+.status-indicator.inactive .dot { background: var(--danger); }
+
+.status-indicator.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+.status-indicator.pending .dot { background: var(--warning); }
+
+/* Badge Status */
+.badge-status {
+  padding: 0.4rem 0.8rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+}
+
+.badge-status.verified {
+  background: #d4edda;
+  color: #155724;
+}
+.badge-status.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+.badge-status.rejected {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Pagination */
+.pagination-container {
+  padding: var(--spacing-3) var(--spacing-4);
+  border-top: 1px solid var(--gray-100);
+}
+
+.pagination .page-link {
+  color: var(--primary);
+  border-radius: var(--radius-sm);
+  margin: 0 2px;
+}
+
+.pagination .page-item.active .page-link {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+/* Table Toolbar */
+.table-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-4);
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.table-toolbar .search-box {
+  flex: 1;
+  min-width: 200px;
+}
+
+.table-toolbar .search-box .form-control {
+  border: 2px solid var(--gray-200);
+  padding: 0.6rem var(--spacing-3);
+  border-radius: var(--radius-md);
+}
+
+.table-toolbar .search-box .form-control:focus {
+  border-color: var(--primary);
+  box-shadow: none;
+}
+
+.table-toolbar .filter-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.table-toolbar .filter-group .form-select {
+  border: 2px solid var(--gray-200);
+  padding: 0.6rem 2rem 0.6rem 1rem;
+  border-radius: var(--radius-md);
+  background-color: #fff;
+}
+
+.table-toolbar .filter-group .form-select:focus {
+  border-color: var(--primary);
+  box-shadow: none;
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
+  .table-toolbar {
+    flex-direction: column;
+  }
+  .table-toolbar .search-box {
+    min-width: 100%;
+  }
+  .table-toolbar .filter-group {
+    width: 100%;
+  }
+  .table-toolbar .filter-group .form-select {
+    flex: 1;
+  }
+  .table-container .table thead th,
+  .table-container .table tbody td {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+}
