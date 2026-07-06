@@ -33,7 +33,15 @@
                     <div class="brand-title">Caretaker Portal</div>
                 </div>
             </div>
-
+<div class="dropdown me-2" id="notif-bell">
+    <button class="btn btn-outline-secondary btn-sm rounded-circle position-relative" data-bs-toggle="dropdown">
+        <i class="fas fa-bell"></i>
+        <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;font-size:0.65rem;"></span>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" id="notif-list" style="min-width:280px;max-height:350px;overflow-y:auto;">
+        <li class="dropdown-item text-muted small">Loading...</li>
+    </ul>
+</div>
             <nav class="nav nav-pills flex-column gap-1">
                 <a class="nav-link {{ request()->routeIs('caretaker.dashboard') ? 'active' : '' }}"
                     href="{{ route('caretaker.dashboard') }}">

@@ -22,7 +22,9 @@
 </div>
 
 <button class="btn btn-primary w-100" id="login-btn">Sign In</button>
-
+<div class="text-center mt-2">
+    <span class="small">New landlord? <a href="{{ route('register') }}">Create an account</a></span>
+</div>
 <div class="text-center mt-3">
     <a href="{{ route('password.request') }}" class="small">Forgot password?</a>
 </div>

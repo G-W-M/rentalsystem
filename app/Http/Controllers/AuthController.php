@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
@@ -15,8 +16,6 @@ class AuthController extends Controller
 {
     /**
      * POST /api/login
-     * Same-origin cookie session for the web/PWA, plus a Sanctum bearer token
-     * returned for native clients and offline-queue replay.
      */
     public function login(LoginRequest $request): JsonResponse
     {
@@ -49,8 +48,54 @@ class AuthController extends Controller
     }
 
     /**
+     * POST /api/register
+     * Free landlord self-registration. Creates the User + Landlord profile
+     * in one transaction, active immediately. Tenants/caretakers still can
+     * NEVER self-register — this endpoint only ever creates role=landlord.
+     */
+    public function register(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'full_name' => ['required', 'string', 'max:100'],
+            'email'     => ['required', 'email', 'max:100', 'unique:users,email'],
+            'username'  => ['required', 'string', 'max:50', 'unique:users,username'],
+            'phone'     => ['nullable', 'string', 'max:20'],
+            'password'  => ['required', 'string', 'min:6', 'confirmed'],
+        ]);
+
+        $user = DB::transaction(function () use ($data) {
+            $user = User::create([
+                'full_name' => $data['full_name'],
+                'email'     => $data['email'],
+                'username'  => $data['username'],
+                'phone'     => $data['phone'] ?? null,
+                'password'  => Hash::make($data['password']),
+                'role'      => 'landlord',
+                'is_active' => true,
+            ]);
+
+            \App\Models\Landlord::create([
+                'user_id'           => $user->id,
+                'registration_date' => now(),
+            ]);
+
+            return $user;
+        });
+
+        Auth::guard('web')->login($user, true);
+        $request->session()->regenerate();
+
+        $token = $user->createToken('pwa')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Account created.',
+            'token'   => $token,
+            'user'    => $this->userPayload($user),
+        ], 201);
+    }
+
+    /**
      * POST /api/logout
-     * Revokes the current bearer token and clears the web session.
      */
     public function logout(Request $request): JsonResponse
     {
@@ -66,21 +111,11 @@ class AuthController extends Controller
         return response()->json(['message' => 'Logged out.']);
     }
 
-    /**
-     * GET /api/me
-     * Returns the authenticated user; used by the PWA to restore session on boot.
-     */
     public function me(Request $request): JsonResponse
     {
         return response()->json($this->userPayload($request->user()));
     }
 
-    /**
-     * PUT /api/me
-     * Updates the authenticated user's own basic profile details. Email is
-     * intentionally NOT editable here — changing it is a bigger operation
-     * (re-verification) and out of scope for basic settings.
-     */
     public function updateProfile(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -98,12 +133,6 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * PUT /api/me/password
-     * Updates the authenticated user's own password. Requires the current
-     * password to prevent a hijacked session from silently locking out the
-     * real owner.
-     */
     public function updatePassword(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -124,21 +153,37 @@ class AuthController extends Controller
 
     /**
      * POST /api/forgot-password
-     * Sends a password reset link using Laravel's password broker.
+     * No mail service is configured in this environment. Instead of sending
+     * an email, this generates a real Laravel password-reset token and
+     * returns the reset URL directly in the JSON response, so the frontend
+     * can display it on-screen. This is a pragmatic dev-environment
+     * substitute — swap for Password::sendResetLink alone once a real mail
+     * driver is configured, and stop returning the URL.
      */
     public function forgotPassword(Request $request): JsonResponse
     {
         $request->validate(['email' => ['required', 'email']]);
 
-        $status = Password::sendResetLink($request->only('email'));
+        $user = User::where('email', $request->email)->first();
 
-        return response()->json(['message' => __($status)]);
+        if ($user === null) {
+            return response()->json([
+                'message'   => 'If that email exists, a reset link has been generated.',
+                'reset_url' => null,
+            ]);
+        }
+
+        $token = Password::broker()->createToken($user);
+        $resetUrl = url('/reset-password?token=' . $token . '&email=' . urlencode($user->email));
+
+        return response()->json([
+            'message'   => 'Reset link generated. Since no mail service is configured, use the link below directly.',
+            'reset_url' => $resetUrl,
+        ]);
     }
 
     /**
      * POST /api/reset-password
-     * Completes the reset. Invalidates all existing tokens so a compromised
-     * session cannot persist after a password change.
      */
     public function resetPassword(Request $request): JsonResponse
     {

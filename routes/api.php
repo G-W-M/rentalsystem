@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
@@ -13,14 +14,11 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | API Routes — Developer B domain
 |--------------------------------------------------------------------------
-| Loaded under the /api prefix by bootstrap/app.php.
-| Developer A appends the landlord property/unit/tenant resource routes to
-| routes/landlord_api.php. The 'maintenance approve/reject' endpoints below
-| are landlord-scoped but call the Dev-B-owned MaintenanceController.
 */
 
 // ----- Public -----
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
@@ -48,6 +46,10 @@ Route::middleware(['auth:sanctum', 'role:admin', 'activity'])
         Route::put('/users/{user}', [AdminController::class, 'update']);
         Route::delete('/users/{user}', [AdminController::class, 'destroy']);
         Route::post('/users/{user}/reset-password', [AdminController::class, 'resetPassword']);
+
+        Route::get('/sessions', [ActivityLogController::class, 'sessions']);
+        Route::get('/audit-trails', [ActivityLogController::class, 'auditTrails']);
+        Route::get('/caretaker-activity', [ActivityLogController::class, 'caretakerActivity']);
     });
 
 // ----- Landlord / Admin (maintenance approvals owned by Dev B) -----
@@ -70,6 +72,9 @@ Route::middleware(['auth:sanctum', 'role:caretaker', 'activity'])
 
         Route::post('/payments/{payment}/verify', [PaymentController::class, 'verify']);
         Route::get('/properties', [\App\Http\Controllers\CaretakerController::class, 'properties']);
+        Route::get('/units', [\App\Http\Controllers\CaretakerController::class, 'units']);
+        Route::get('/activity-logs', [\App\Http\Controllers\DailyActivityLogController::class, 'index']);
+        Route::post('/activity-logs', [\App\Http\Controllers\DailyActivityLogController::class, 'store']);
     });
 
 // ----- Tenant -----
