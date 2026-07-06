@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\PaymentVerified;
 use App\Models\Notifications;
 use App\Models\Payment;
+use App\Models\Unit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -27,7 +28,7 @@ class PaymentController extends Controller
     /**
      * POST /api/tenant/payments/{payment}/transaction-code
      * Tenant submits the M-Pesa (or other) transaction reference for a pending
-     * payment. Idempotent under offline replay via the unique transaction_id.
+     * payment.
      */
     public function submitTransactionCode(Request $request, Payment $payment): JsonResponse
     {
@@ -53,14 +54,7 @@ class PaymentController extends Controller
             'message' => 'Transaction code submitted. Awaiting verification.',
             'payment' => $payment,
         ]);
-    }
-
-    /**
-     * POST /api/caretaker/payments/{payment}/verify
-     * HARD RULE: the caretaker CANNOT change the amount. It is read from the
-     * stored record and never from the request body.
-     */
-    public function verify(Request $request, Payment $payment): JsonResponse
+    }public function verify(Request $request, Payment $payment): JsonResponse
     {
         if ($payment->status === 'completed') {
             return response()->json(['message' => 'Already verified.'], 422);
@@ -95,4 +89,23 @@ class PaymentController extends Controller
 
         return response()->json(['message' => 'Payment verified.', 'payment' => $payment]);
     }
+
+    /**
+     * GET /api/landlord/payments
+     * All payments across this landlord's properties (via unit -> property).
+     */
+    public function landlordIndex(Request $request): JsonResponse
+    {
+        $unitIds = Unit::whereHas('property', fn ($q) =>
+                $q->where('landlord_id', $request->user()->id))
+            ->pluck('id');
+
+        $payments = Payment::whereIn('unit_id', $unitIds)
+            ->with('tenant.user:id,full_name', 'unit:id,unit_number,property_id')
+            ->latest('due_date')
+            ->paginate(20);
+
+        return response()->json($payments);
+    }
 }
+

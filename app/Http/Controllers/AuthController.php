@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -72,6 +73,43 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         return response()->json($this->userPayload($request->user()));
+    }
+
+    /**
+     * POST /api/forgot-password
+     * Sends a password reset link using Laravel's password broker.
+     */
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        $request->validate(['email' => ['required', 'email']]);
+
+        $status = Password::sendResetLink($request->only('email'));
+
+        return response()->json(['message' => __($status)]);
+    }
+
+    /**
+     * POST /api/reset-password
+     * Completes the reset. Invalidates all existing tokens so a compromised
+     * session cannot persist after a password change.
+     */
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'token'    => ['required'],
+            'email'    => ['required', 'email'],
+            'password' => ['required', 'confirmed', 'min:6'],
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user, string $password) {
+                $user->forceFill(['password' => Hash::make($password)])->save();
+                $user->tokens()->delete();
+            }
+        );
+
+        return response()->json(['message' => __($status)]);
     }
 
     private function userPayload(User $user): array

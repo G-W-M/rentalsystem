@@ -51,6 +51,7 @@ Route::middleware(['auth:sanctum', 'role:caretaker', 'activity'])
         Route::post('/tasks/{task}/complete', [TaskController::class, 'complete']);
 
         Route::post('/payments/{payment}/verify', [PaymentController::class, 'verify']);
+        Route::get('/properties', [\App\Http\Controllers\CaretakerController::class, 'properties']);
     });
 
 // ----- Tenant -----

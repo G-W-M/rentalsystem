@@ -95,33 +95,50 @@
 @endsection
 
 @push('scripts')
-    <script type="module">
-        import {
-            api,
-            renderError
-        } from '/resources/js/api.js';
-        import Chart from 'chart.js/auto';
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        function xsrf() {
+            return decodeURIComponent((document.cookie.match(/XSRF-TOKEN=([^;]+)/) || [])[1] || '');
+        }
+
+        function toArraySafe(value) {
+            if (Array.isArray(value)) return value;
+            if (value && typeof value === 'object') return Object.values(value);
+            return [];
+        }
 
         async function load() {
             try {
-                const data = await api('/api/landlord/dashboard');
+                const res = await fetch('/api/landlord/dashboard', {
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-XSRF-TOKEN': xsrf()
+                    },
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Failed to load dashboard.');
+
                 document.querySelectorAll('[data-kpi]').forEach((el) => {
                     el.textContent = data[el.getAttribute('data-kpi')] ?? 0;
                 });
 
-                const occ = (data.charts && data.charts.occupancy_by_property) || [];
+                const charts = data.charts || {};
+                const occ = toArraySafe(charts.occupancy_by_property);
+                const rev = toArraySafe(charts.revenue_last_6_months);
+
                 new Chart(document.getElementById('occupancyChart'), {
                     type: 'bar',
                     data: {
-                        labels: occ.map((p) => p.name),
+                        labels: occ.map((p) => p.name ?? ''),
                         datasets: [{
                                 label: 'Occupied',
-                                data: occ.map((p) => p.occupied),
+                                data: occ.map((p) => p.occupied ?? 0),
                                 backgroundColor: '#055236'
                             },
                             {
                                 label: 'Total',
-                                data: occ.map((p) => p.total),
+                                data: occ.map((p) => p.total ?? 0),
                                 backgroundColor: '#80B9B1'
                             },
                         ],
@@ -136,14 +153,13 @@
                     },
                 });
 
-                const rev = (data.charts && data.charts.revenue_last_6_months) || [];
                 new Chart(document.getElementById('revenueChart'), {
                     type: 'line',
                     data: {
-                        labels: rev.map((r) => r.month),
+                        labels: rev.map((r) => r.month ?? ''),
                         datasets: [{
                             label: 'Revenue',
-                            data: rev.map((r) => r.total),
+                            data: rev.map((r) => r.total ?? 0),
                             borderColor: '#6C27DA',
                             tension: 0.3
                         }],
@@ -158,10 +174,10 @@
                     },
                 });
             } catch (e) {
-                renderError(document.getElementById('dash-error'), e);
+                document.getElementById('dash-error').innerHTML = '<div class="alert alert-danger">' + e.message +
+                    '</div>';
             }
         }
-
         load();
     </script>
 @endpush

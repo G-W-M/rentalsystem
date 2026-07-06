@@ -39,4 +39,5 @@ Route::middleware(['auth:sanctum', 'role:landlord,admin', 'activity'])
 
         Route::get('/caretakers', [LandlordController::class, 'caretakers']);
         Route::post('/caretakers', [LandlordController::class, 'storeCaretaker']);
+        Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'landlordIndex']);
     });
