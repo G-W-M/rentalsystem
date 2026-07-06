@@ -1,8 +1,8 @@
 <?php
 
+use App\Http\Controllers\DailyActivityLogController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LandlordController;
-use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\TenantController;
@@ -13,18 +13,6 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | Landlord API Routes — Developer A domain
 |--------------------------------------------------------------------------
-| MERGE-SAFE: this is a SEPARATE partial file. Load it from bootstrap/app.php
-| alongside routes/api.php:
-|
-|     Route::middleware('api')->prefix('api')->group(function () {
-|         require base_path('routes/api.php');           // Dev B
-|         require base_path('routes/landlord_api.php');   // Dev A
-|     });
-|
-| Both developers edit only their own route file — zero route conflicts.
-| The maintenance approve/reject endpoints remain in Dev B's routes/api.php
-| (they call the Dev-B-owned MaintenanceController), but the landlordIndex
-| LISTING endpoint below is registered here since it's a landlord-facing page.
 */
 
 Route::middleware(['auth:sanctum', 'role:landlord,admin', 'activity'])
@@ -44,5 +32,7 @@ Route::middleware(['auth:sanctum', 'role:landlord,admin', 'activity'])
         Route::post('/caretakers', [LandlordController::class, 'storeCaretaker']);
 
         Route::get('/payments', [PaymentController::class, 'landlordIndex']);
-        Route::get('/maintenance', [MaintenanceController::class, 'landlordIndex']);
+        Route::get('/maintenance', [\App\Http\Controllers\MaintenanceController::class, 'landlordIndex']);
+
+        Route::get('/activity-logs', [DailyActivityLogController::class, 'landlordIndex']);
     });

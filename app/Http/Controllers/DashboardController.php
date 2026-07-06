@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Caretaker;
 use App\Models\Landlord;
 use App\Models\MaintenanceRequest;
 use App\Models\Payment;
@@ -18,20 +19,11 @@ use Illuminate\Support\Facades\DB;
 /**
  * SHARED FILE — owned jointly across the role split. Four methods, four
  * roles. Never overwrite this file with a version containing only some of
- * these methods — see ASSEMBLY.md for the full history of why this matters.
- *
- * IMPORTANT: every Cache::remember() closure here must return PLAIN ARRAYS,
- * not Eloquent Collections. Collections cached via the file/database driver
- * can come back as unserializable __PHP_Incomplete_Class_Name stubs on
- * certain PHP/cache-driver combinations. Always ->toArray()/->values() any
- * Collection before it leaves a cache closure.
+ * these methods — see ASSEMBLY.md.
  */
 class DashboardController extends Controller
 {
-    /**
-     * GET /api/admin/dashboard
-     * Global, unscoped platform stats (per FR 6.1).
-     */
+    /** GET /api/admin/dashboard */
     public function admin(Request $request): JsonResponse
     {
         $data = Cache::remember('admin_dashboard', 300, function () {
@@ -39,8 +31,7 @@ class DashboardController extends Controller
                 ->groupBy('property_type')
                 ->get()
                 ->map(fn ($r) => ['type' => $r->property_type, 'total' => (int) $r->total])
-                ->values()
-                ->toArray();
+                ->values()->toArray();
 
             $topLandlords = Landlord::withSum(
                     ['properties as revenue' => function ($q) {
@@ -51,50 +42,27 @@ class DashboardController extends Controller
                     'payments.amount'
                 )
                 ->with('user:id,full_name')
-                ->orderByDesc('revenue')
-                ->take(5)
-                ->get()
-                ->map(fn ($l) => [
-                    'name'    => $l->user->full_name ?? 'Unknown',
-                    'revenue' => (float) ($l->revenue ?? 0),
-                ])
-                ->values()
-                ->toArray();
+                ->orderByDesc('revenue')->take(5)->get()
+                ->map(fn ($l) => ['name' => $l->user->full_name ?? 'Unknown', 'revenue' => (float) ($l->revenue ?? 0)])
+                ->values()->toArray();
 
             $revenueTrend = Payment::where('status', 'completed')
                 ->where('payment_date', '>=', now()->subMonths(6)->startOfMonth())
-                ->select(
-                    DB::raw("DATE_FORMAT(payment_date, '%Y-%m') as month"),
-                    DB::raw('SUM(amount) as total')
-                )
-                ->groupBy('month')
-                ->orderBy('month')
-                ->get()
+                ->select(DB::raw("DATE_FORMAT(payment_date, '%Y-%m') as month"), DB::raw('SUM(amount) as total'))
+                ->groupBy('month')->orderBy('month')->get()
                 ->map(fn ($r) => ['month' => $r->month, 'total' => (float) $r->total])
-                ->values()
-                ->toArray();
+                ->values()->toArray();
 
             $recentUsers = User::latest()->take(5)->get(['id', 'full_name', 'role', 'created_at'])
-                ->map(fn ($u) => [
-                    'id'         => $u->id,
-                    'full_name'  => $u->full_name,
-                    'role'       => $u->role,
-                    'created_at' => $u->created_at?->toISOString(),
-                ])
-                ->values()
-                ->toArray();
+                ->map(fn ($u) => ['id' => $u->id, 'full_name' => $u->full_name, 'role' => $u->role, 'created_at' => $u->created_at?->toISOString()])
+                ->values()->toArray();
 
             $recentPayments = Payment::with('tenant.user:id,full_name')->latest()->take(5)->get()
                 ->map(fn ($p) => [
-                    'id'     => $p->id,
-                    'amount' => (float) $p->amount,
-                    'status' => $p->status,
-                    'tenant' => $p->tenant && $p->tenant->user
-                        ? ['user' => ['full_name' => $p->tenant->user->full_name]]
-                        : null,
+                    'id' => $p->id, 'amount' => (float) $p->amount, 'status' => $p->status,
+                    'tenant' => $p->tenant && $p->tenant->user ? ['user' => ['full_name' => $p->tenant->user->full_name]] : null,
                 ])
-                ->values()
-                ->toArray();
+                ->values()->toArray();
 
             return [
                 'total_landlords'     => Landlord::count(),
@@ -117,7 +85,7 @@ class DashboardController extends Controller
         return response()->json($data);
     }
 
-    /** GET /api/landlord/dashboard — KPIs + chart data, scoped to the landlord. */
+    /** GET /api/landlord/dashboard */
     public function landlord(Request $request): JsonResponse
     {
         $id = $request->user()->id;
@@ -130,18 +98,10 @@ class DashboardController extends Controller
             $occupiedUnits = Unit::whereIn('id', $unitIds)->where('status', 'occupied')->count();
 
             $occupancyByProperty = Property::where('landlord_id', $id)
-                ->withCount([
-                    'units',
-                    'units as occupied_count' => fn ($q) => $q->where('status', 'occupied'),
-                ])
+                ->withCount(['units', 'units as occupied_count' => fn ($q) => $q->where('status', 'occupied')])
                 ->get(['id', 'name'])
-                ->map(fn ($p) => [
-                    'name'     => $p->name,
-                    'total'    => $p->units_count,
-                    'occupied' => $p->occupied_count,
-                ])
-                ->values()
-                ->toArray();
+                ->map(fn ($p) => ['name' => $p->name, 'total' => $p->units_count, 'occupied' => $p->occupied_count])
+                ->values()->toArray();
 
             return [
                 'total_properties' => $propertyIds->count(),
@@ -163,7 +123,7 @@ class DashboardController extends Controller
         return response()->json($data);
     }
 
-    /** GET /api/caretaker/dashboard — KPIs for the authenticated caretaker. */
+    /** GET /api/caretaker/dashboard */
     public function caretaker(Request $request): JsonResponse
     {
         $id = $request->user()->id;
@@ -183,13 +143,37 @@ class DashboardController extends Controller
         ]);
     }
 
-    /** GET /api/tenant/dashboard — "My Unit" snapshot + payment/maintenance summary. */
+    /**
+     * GET /api/tenant/dashboard
+     * "My Unit" snapshot now also includes the assigned caretaker's name +
+     * phone, so a tenant knows who to contact. Caretaker is resolved via
+     * the unit's property -> property's landlord -> that landlord's active
+     * caretaker (same "first active caretaker" resolution used when a
+     * maintenance request is approved, kept consistent with that logic).
+     */
     public function tenant(Request $request): JsonResponse
     {
         $id = $request->user()->id;
 
-        $tenant = Tenant::with('activeOccupancy.unit.property:id,name')->find($id);
+        $tenant = Tenant::with('activeOccupancy.unit.property:id,name,landlord_id')->find($id);
         $occupancy = $tenant?->activeOccupancy;
+
+        $caretakerInfo = null;
+        if ($occupancy !== null) {
+            $landlordId = $occupancy->unit->property->landlord_id;
+            $caretaker = Caretaker::where('landlord_id', $landlordId)
+                ->where('is_active', true)
+                ->with('user:id,full_name,phone,email')
+                ->first();
+
+            if ($caretaker !== null && $caretaker->user !== null) {
+                $caretakerInfo = [
+                    'full_name' => $caretaker->user->full_name,
+                    'phone'     => $caretaker->user->phone,
+                    'email'     => $caretaker->user->email,
+                ];
+            }
+        }
 
         return response()->json([
             'has_unit' => $occupancy !== null,
@@ -199,11 +183,12 @@ class DashboardController extends Controller
                 'rent'        => $occupancy->rent_amount_at_start,
                 'since'       => $occupancy->start_date,
             ] : null,
-            'pending_payment' => Payment::where('tenant_id', $id)
+            'caretaker'        => $caretakerInfo,
+            'pending_payment'  => Payment::where('tenant_id', $id)
                                     ->where('status', 'pending')->latest('due_date')->first(),
             'open_maintenance' => MaintenanceRequest::where('tenant_id', $id)
                                     ->whereNotIn('status', ['resolved', 'rejected'])->count(),
-            'recent_payments' => Payment::where('tenant_id', $id)
+            'recent_payments'  => Payment::where('tenant_id', $id)
                                     ->latest('due_date')->take(5)->get(),
         ]);
     }
@@ -213,13 +198,8 @@ class DashboardController extends Controller
         return Payment::whereIn('unit_id', $unitIds)
             ->where('status', 'completed')
             ->where('payment_date', '>=', now()->subMonths(6)->startOfMonth())
-            ->select(
-                DB::raw("DATE_FORMAT(payment_date, '%Y-%m') as month"),
-                DB::raw('SUM(amount) as total')
-            )
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get()
+            ->select(DB::raw("DATE_FORMAT(payment_date, '%Y-%m') as month"), DB::raw('SUM(amount) as total'))
+            ->groupBy('month')->orderBy('month')->get()
             ->map(fn ($r) => ['month' => $r->month, 'total' => (float) $r->total])
             ->toArray();
     }

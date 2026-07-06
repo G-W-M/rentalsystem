@@ -53,4 +53,5 @@ Route::middleware('auth')->group(function () {
     Route::view('/tenant/maintenance', 'tenant.maintenance-request')->name('tenant.maintenance');
     Route::view('/tenant/payments', 'tenant.payments')->name('tenant.payments');
     Route::view('/tenant/settings', 'tenant.settings.settings')->name('tenant.settings');
+
 });
