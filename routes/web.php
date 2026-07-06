@@ -9,16 +9,13 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | Web Routes — Developer B domain
 |--------------------------------------------------------------------------
-| Session-based pages. The Blade layouts POST to route('logout'); the API
-| logout (token revoke) lives in routes/api.php for native clients.
-| Named dashboard routes exist so the shared layouts' route() calls resolve.
-| Developer A appends landlord/property web pages to routes/landlord_web.php.
 */
 
 Route::view('/', 'welcome')->name('home');
 
 // ----- Auth pages -----
 Route::view('/login', 'auth.login')->name('login');
+Route::view('/register', 'auth.register')->name('register');
 Route::view('/forgot-password', 'auth.forgot-password')->name('password.request');
 Route::view('/reset-password', 'auth.reset-password')->name('password.reset');
 
@@ -37,12 +34,14 @@ Route::middleware('auth')->group(function () {
     Route::view('/admin/dashboard', 'admin.dashboard')->name('admin.dashboard');
     Route::view('/admin/users', 'admin.users')->name('admin.users');
     Route::view('/admin/settings', 'admin.settings')->name('admin.settings');
+    Route::view('/admin/activity-logs', 'admin.activity-logs')->name('admin.activity-logs');
 
     // Caretaker
     Route::view('/caretaker/dashboard', 'caretaker.dashboard')->name('caretaker.dashboard');
     Route::view('/caretaker/tasks', 'caretaker.tasks')->name('caretaker.tasks.index');
     Route::view('/caretaker/maintenance', 'caretaker.maintenance')->name('caretaker.maintenance.index');
     Route::view('/caretaker/payments', 'caretaker.payments')->name('caretaker.payments.index');
+    Route::view('/caretaker/verified-payments', 'caretaker.verified-payments')->name('caretaker.verified-payments');
     Route::view('/caretaker/settings', 'caretaker.settings.settings')->name('caretaker.settings');
     Route::view('/caretaker/properties', 'caretaker.properties')->name('caretaker.properties');
     Route::view('/caretaker/activity-logs', 'caretaker.activity-logs')->name('caretaker.activity-logs');
@@ -53,5 +52,9 @@ Route::middleware('auth')->group(function () {
     Route::view('/tenant/maintenance', 'tenant.maintenance-request')->name('tenant.maintenance');
     Route::view('/tenant/payments', 'tenant.payments')->name('tenant.payments');
     Route::view('/tenant/settings', 'tenant.settings.settings')->name('tenant.settings');
+<<<<<<< HEAD
 
 });
+=======
+});
+>>>>>>> 3971119c2cc6c9d0d57e94bd6c45190dbbd2071f
