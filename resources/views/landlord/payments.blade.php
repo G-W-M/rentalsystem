@@ -6,7 +6,14 @@
 <div class="p-4">
     <h1 class="text-2xl font-bold text-primary mb-4">Payments</h1>
     <div id="pay-error"></div>
-
+<div class="mb-3">
+    <a href="/api/landlord/payments/export/csv" class="btn btn-sm btn-outline-secondary" target="_blank">
+        <i class="fas fa-file-csv me-1"></i> Export CSV
+    </a>
+    <a href="/api/landlord/payments/export/pdf" class="btn btn-sm btn-outline-secondary" target="_blank">
+        <i class="fas fa-file-pdf me-1"></i> Export PDF
+    </a>
+</div>
     <div class="card shadow-sm rounded-lg border-0 mb-3">
         <div class="card-body">
             <div class="row g-2">
@@ -28,6 +35,7 @@
 
     <div class="card shadow-sm rounded-lg border-0">
         <div class="card-body p-0">
+            
             <table class="table mb-0 align-middle">
                 <thead>
                     <tr>

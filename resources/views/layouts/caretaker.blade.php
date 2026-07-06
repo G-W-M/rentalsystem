@@ -116,7 +116,7 @@
                     Dashboard</a>
                 <a class="nav-link" href="{{ route('caretaker.tasks.index') }}"><i class="fas fa-list-check me-2"></i>
                     Tasks</a>
-                <a class="nav-link" href="{{ route('caretaker.activity-logs.index') }}"><i
+                <a class="nav-link" href="{{ route('caretaker.activity-logs') }}"><i
                         class="fas fa-clipboard-list me-2"></i>
                     Activity Logs</a>
                 <a class="nav-link" href="{{ route('caretaker.maintenance.index') }}"><i

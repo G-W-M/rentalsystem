@@ -12,10 +12,6 @@ use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
-    /**
-     * GET /api/tenant/payments
-     * The authenticated tenant's own payment history, newest due first.
-     */
     public function tenantHistory(Request $request): JsonResponse
     {
         $payments = Payment::where('tenant_id', $request->user()->id)
@@ -25,11 +21,6 @@ class PaymentController extends Controller
         return response()->json($payments);
     }
 
-    /**
-     * POST /api/tenant/payments/{payment}/transaction-code
-     * Tenant submits the M-Pesa (or other) transaction reference for a pending
-     * payment.
-     */
     public function submitTransactionCode(Request $request, Payment $payment): JsonResponse
     {
         abort_unless($payment->tenant_id === $request->user()->id, 403, 'Not your payment.');
@@ -54,7 +45,9 @@ class PaymentController extends Controller
             'message' => 'Transaction code submitted. Awaiting verification.',
             'payment' => $payment,
         ]);
-    }public function verify(Request $request, Payment $payment): JsonResponse
+    }
+
+    public function verify(Request $request, Payment $payment): JsonResponse
     {
         if ($payment->status === 'completed') {
             return response()->json(['message' => 'Already verified.'], 422);
@@ -92,7 +85,7 @@ class PaymentController extends Controller
 
     /**
      * GET /api/landlord/payments
-     * All payments across this landlord's properties (via unit -> property).
+     * Scoped to this landlord's units only.
      */
     public function landlordIndex(Request $request): JsonResponse
     {
@@ -100,12 +93,42 @@ class PaymentController extends Controller
                 $q->where('landlord_id', $request->user()->id))
             ->pluck('id');
 
-        $payments = Payment::whereIn('unit_id', $unitIds)
-            ->with('tenant.user:id,full_name', 'unit:id,unit_number,property_id')
-            ->latest('due_date')
+        $query = Payment::whereIn('unit_id', $unitIds)
+            ->with('tenant.user:id,full_name', 'unit:id,unit_number,property_id');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        return response()->json($query->latest('due_date')->paginate(20));
+    }
+
+    /**
+     * GET /api/admin/payments
+     * Unscoped — admin sees every payment across every landlord.
+     */
+    public function adminIndex(Request $request): JsonResponse
+    {
+        $query = Payment::with('tenant.user:id,full_name', 'unit:id,unit_number,property_id');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        return response()->json($query->latest('due_date')->paginate(20));
+    }
+
+    /**
+     * GET /api/caretaker/payments/verified
+     */
+    public function caretakerVerifiedIndex(Request $request): JsonResponse
+    {
+        $payments = Payment::where('verified_by', $request->user()->id)
+            ->where('status', 'completed')
+            ->with('tenant.user:id,full_name', 'unit:id,unit_number')
+            ->latest('verified_at')
             ->paginate(20);
 
         return response()->json($payments);
     }
 }
-

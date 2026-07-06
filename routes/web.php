@@ -52,9 +52,4 @@ Route::middleware('auth')->group(function () {
     Route::view('/tenant/maintenance', 'tenant.maintenance-request')->name('tenant.maintenance');
     Route::view('/tenant/payments', 'tenant.payments')->name('tenant.payments');
     Route::view('/tenant/settings', 'tenant.settings.settings')->name('tenant.settings');
-<<<<<<< HEAD
-
 });
-=======
-});
->>>>>>> 3971119c2cc6c9d0d57e94bd6c45190dbbd2071f

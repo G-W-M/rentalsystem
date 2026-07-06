@@ -4,6 +4,7 @@ use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExportController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\PaymentController;
@@ -50,14 +51,24 @@ Route::middleware(['auth:sanctum', 'role:admin', 'activity'])
         Route::get('/sessions', [ActivityLogController::class, 'sessions']);
         Route::get('/audit-trails', [ActivityLogController::class, 'auditTrails']);
         Route::get('/caretaker-activity', [ActivityLogController::class, 'caretakerActivity']);
+
+        Route::get('/payments/export/csv', [ExportController::class, 'paymentsCsv']);
+        Route::get('/payments/export/pdf', [ExportController::class, 'paymentsPdf']);
+        Route::get('/maintenance/export/csv', [ExportController::class, 'maintenanceCsv']);
+        Route::get('/maintenance/export/pdf', [ExportController::class, 'maintenancePdf']);
     });
 
-// ----- Landlord / Admin (maintenance approvals owned by Dev B) -----
+// ----- Landlord / Admin (maintenance approvals + exports owned by Dev B) -----
 Route::middleware(['auth:sanctum', 'role:landlord,admin', 'activity'])
     ->prefix('landlord')
     ->group(function () {
         Route::post('/maintenance/{maintenance}/approve', [MaintenanceController::class, 'approve']);
         Route::post('/maintenance/{maintenance}/reject', [MaintenanceController::class, 'reject']);
+
+        Route::get('/payments/export/csv', [ExportController::class, 'paymentsCsv']);
+        Route::get('/payments/export/pdf', [ExportController::class, 'paymentsPdf']);
+        Route::get('/maintenance/export/csv', [ExportController::class, 'maintenanceCsv']);
+        Route::get('/maintenance/export/pdf', [ExportController::class, 'maintenancePdf']);
     });
 
 // ----- Caretaker -----
@@ -71,6 +82,8 @@ Route::middleware(['auth:sanctum', 'role:caretaker', 'activity'])
         Route::post('/tasks/{task}/complete', [TaskController::class, 'complete']);
 
         Route::post('/payments/{payment}/verify', [PaymentController::class, 'verify']);
+        Route::get('/payments/verified', [PaymentController::class, 'caretakerVerifiedIndex']);
+
         Route::get('/properties', [\App\Http\Controllers\CaretakerController::class, 'properties']);
         Route::get('/units', [\App\Http\Controllers\CaretakerController::class, 'units']);
         Route::get('/activity-logs', [\App\Http\Controllers\DailyActivityLogController::class, 'index']);

@@ -18,7 +18,7 @@ class MaintenanceController extends Controller
 {
     /**
      * GET /api/landlord/maintenance
-     * All maintenance requests across this landlord's properties.
+     * Scoped to this landlord's properties.
      */
     public function landlordIndex(Request $request): JsonResponse
     {
@@ -40,11 +40,25 @@ class MaintenanceController extends Controller
     }
 
     /**
+     * GET /api/admin/maintenance
+     * Unscoped — admin sees every maintenance request across every landlord.
+     */
+    public function adminIndex(Request $request): JsonResponse
+    {
+        $query = MaintenanceRequest::with('tenant.user:id,full_name', 'unit:id,unit_number', 'property:id,name');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+        if ($request->filled('priority')) {
+            $query->where('priority', $request->input('priority'));
+        }
+
+        return response()->json($query->latest()->paginate(20));
+    }
+
+    /**
      * GET /api/tenant/maintenance
-     * The authenticated tenant's own maintenance requests — active and
-     * historical (per FR 5.3: "View: Active and historical requests").
-     * Includes the linked task so the frontend can show the correct action
-     * (Confirm only once the caretaker has completed their part).
      */
     public function tenantIndex(Request $request): JsonResponse
     {
@@ -58,8 +72,6 @@ class MaintenanceController extends Controller
 
     /**
      * POST /api/tenant/maintenance
-     * Tenant raises a request for their CURRENT unit. Unit and property are
-     * derived from the tenant's active occupancy, never trusted from the client.
      */
     public function store(MaintenanceRequestRequest $request): JsonResponse
     {
@@ -188,8 +200,6 @@ class MaintenanceController extends Controller
 
     /**
      * POST /api/tenant/maintenance/{maintenance}/confirm
-     * The double sign-off. Tenant confirms the caretaker's completed work,
-     * which closes the task and resolves the request.
      */
     public function confirm(Request $request, MaintenanceRequest $maintenance): JsonResponse
     {

@@ -389,6 +389,16 @@ class FunSeeder extends Seeder
 
         DB::table('daily_activity_logs')->insert([
             'caretaker_id' => $caretakerUser,
+            'log_date' => Carbon::now()->toDateString(),
+            'activities_performed' => "1. Morning walkthrough of Greenview Apartments\n2. Collected rent receipts from Unit A1\n3. Followed up on circuit tripping report in Unit A1\n4. Watered garden and swept common areas",
+            'notes' => 'Circuit tripping issue still needs an electrician — flagged as emergency.',
+            'submitted_at' => Carbon::now(),
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
+
+        DB::table('daily_activity_logs')->insert([
+            'caretaker_id' => $caretakerUser,
             'log_date' => Carbon::now()->subDays(2),
             'activities_performed' => "1. Responded to maintenance requests\n2. Cleaned the garden\n3. Checked security systems\n4. Prepared rental payment report",
             'notes' => 'Security systems are functioning properly.',
@@ -428,6 +438,8 @@ class FunSeeder extends Seeder
             'device_type' => 'web',
             'login_time' => Carbon::now()->subHours(2),
             'logout_time' => null,
+            'payload' => '{}',
+            'last_activity' => Carbon::now()->subHours(2)->timestamp,
             'is_active' => true,
             'ip_address' => '192.168.1.100',
             'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -442,6 +454,8 @@ class FunSeeder extends Seeder
             'login_time' => Carbon::now()->subHours(5),
             'logout_time' => Carbon::now()->subHours(3),
             'session_duration' => 120,
+            'payload' => '{}',
+            'last_activity' => Carbon::now()->subHours(3)->timestamp,
             'is_active' => false,
             'ip_address' => '192.168.1.101',
             'user_agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0) AppleWebKit/605.1.15',

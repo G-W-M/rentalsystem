@@ -56,7 +56,7 @@
                     <i class="fas fa-door-open me-2"></i> Units
                 </a>
                 <a class="nav-link {{ request()->routeIs('landlord.activity-logs*') ? 'active' : '' }}"
-                    href="{{ route('landlord.activity-logs.index') }}">
+                    href="{{ route('landlord.activity-logs') }}">
                     <i class="fas fa-clipboard-list me-2"></i> Activity Logs
                 </a>
                 <a class="nav-link {{ request()->routeIs('landlord.tenants*') ? 'active' : '' }}"
