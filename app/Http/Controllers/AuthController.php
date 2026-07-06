@@ -76,6 +76,53 @@ class AuthController extends Controller
     }
 
     /**
+     * PUT /api/me
+     * Updates the authenticated user's own basic profile details. Email is
+     * intentionally NOT editable here — changing it is a bigger operation
+     * (re-verification) and out of scope for basic settings.
+     */
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $data = $request->validate([
+            'full_name' => ['required', 'string', 'max:100'],
+            'phone'     => ['nullable', 'string', 'max:20'],
+        ]);
+
+        $user->update($data);
+
+        return response()->json([
+            'message' => 'Profile updated.',
+            'user'    => $this->userPayload($user->fresh()),
+        ]);
+    }
+
+    /**
+     * PUT /api/me/password
+     * Updates the authenticated user's own password. Requires the current
+     * password to prevent a hijacked session from silently locking out the
+     * real owner.
+     */
+    public function updatePassword(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $data = $request->validate([
+            'current_password' => ['required', 'string'],
+            'password'         => ['required', 'string', 'min:6', 'confirmed'],
+        ]);
+
+        if (! Hash::check($data['current_password'], $user->password)) {
+            return response()->json(['message' => 'Current password is incorrect.'], 422);
+        }
+
+        $user->update(['password' => Hash::make($data['password'])]);
+
+        return response()->json(['message' => 'Password updated.']);
+    }
+
+    /**
      * POST /api/forgot-password
      * Sends a password reset link using Laravel's password broker.
      */

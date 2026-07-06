@@ -42,11 +42,12 @@
 
         <div class="col-12 col-lg-7">
             <div class="card shadow-sm rounded-lg border-0">
-                <div class="card-header bg-white fw-semibold">My Requests (this session)</div>
+                <div class="card-header bg-white fw-semibold">My Requests</div>
+                <div id="requests-error"></div>
                 <div class="card-body p-0">
                     <table class="table mb-0 align-middle">
                         <thead><tr><th>Subject</th><th>Status</th><th class="text-end">Action</th></tr></thead>
-                        <tbody id="requests-body"><tr><td colspan="3" class="text-muted">No requests yet</td></tr></tbody>
+                        <tbody id="requests-body"><tr><td colspan="3" class="text-muted">Loading...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -59,67 +60,43 @@
 <script>
     function xsrf() { return decodeURIComponent((document.cookie.match(/XSRF-TOKEN=([^;]+)/) || [])[1] || ''); }
 
-    // Prime the CSRF cookie ONCE per page load, and never let a failure here
-    // (e.g. offline) block the actual submission — we fall back to whatever
-    // XSRF-TOKEN cookie already exists.
-    let csrfPrimed = false;
-    async function primeCsrfOnce() {
-        if (csrfPrimed) return;
-        try {
-            await fetch('/sanctum/csrf-cookie', { credentials: 'include' });
-        } catch (e) {
-            // offline or network error — proceed with existing cookie, if any
-        }
-        csrfPrimed = true;
-    }
-
     async function apiFetch(path, options = {}) {
         const method = (options.method || 'GET').toUpperCase();
-        if (method !== 'GET') {
-            await primeCsrfOnce();
-        }
-
-        let res;
-        try {
-            res = await fetch(path, {
-                credentials: 'include',
-                ...options,
-                method,
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-XSRF-TOKEN': xsrf(),
-                    ...(options.headers || {}),
-                },
-            });
-        } catch (networkError) {
-            // The request never reached the network at all (fully offline,
-            // no service worker interception possible). Surface a clear,
-            // app-level message instead of letting this bubble as a generic error.
-            throw { message: 'You appear to be offline. This will be saved and sent when you reconnect.', offline: true };
-        }
-
+        if (method !== 'GET') await fetch('/sanctum/csrf-cookie', { credentials: 'include' });
+        const res = await fetch(path, {
+            credentials: 'include', ...options, method,
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-XSRF-TOKEN': xsrf(), ...(options.headers || {}) },
+        });
         const text = await res.text();
         const body = text ? JSON.parse(text) : null;
-
-        if (!res.ok && res.status !== 202) {
-            throw { message: (body && body.message) || 'Request failed.' };
-        }
-
+        if (!res.ok && res.status !== 202) throw { message: (body && body.message) || 'Request failed.' };
         return body;
     }
 
-    const submitted = [];
+    function badge(status) {
+        const map = { submitted: 'secondary', assigned: 'info', in_progress: 'primary', resolved: 'success', rejected: 'danger' };
+        return '<span class="badge bg-' + (map[status] || 'secondary') + '">' + status + '</span>';
+    }
 
-    function renderRequests() {
-        const bodyEl = document.getElementById('requests-body');
-        if (!submitted.length) { bodyEl.innerHTML = '<tr><td colspan="3" class="text-muted">No requests yet</td></tr>'; return; }
-        bodyEl.innerHTML = submitted.map((r) => {
-            let action = '<span class="text-muted small">—</span>';
-            if (r.status === 'awaiting_confirm') action = '<button class="btn btn-sm btn-success" data-confirm="' + r.id + '">Confirm</button>';
-            return '<tr><td>' + (r.subject || '-') + '</td><td><span class="badge bg-secondary">' + r.status +
-                '</span></td><td class="text-end">' + action + '</td></tr>';
-        }).join('');
+    async function loadRequests() {
+        try {
+            const requests = await apiFetch('/api/tenant/maintenance');
+            const body = document.getElementById('requests-body');
+            if (!requests.length) {
+                body.innerHTML = '<tr><td colspan="3" class="text-muted">No requests yet</td></tr>';
+                return;
+            }
+            body.innerHTML = requests.map((r) => {
+                let action = '<span class="text-muted small">—</span>';
+                if (r.task && r.task.is_completed_by_caretaker && !r.task.tenant_confirmed) {
+                    action = '<button class="btn btn-sm btn-success" data-confirm="' + r.id + '">Confirm</button>';
+                }
+                return '<tr><td>' + (r.subject || r.category) + '</td><td>' + badge(r.status) +
+                    '</td><td class="text-end">' + action + '</td></tr>';
+            }).join('');
+        } catch (e) {
+            document.getElementById('requests-error').innerHTML = '<div class="alert alert-danger m-2">' + e.message + '</div>';
+        }
     }
 
     document.getElementById('submit-request').addEventListener('click', async () => {
@@ -135,19 +112,16 @@
                     description: document.getElementById('description').value,
                 }),
             });
-
             if (res && res.queued) {
-                out.innerHTML = '<div class="alert alert-warning">Saved offline. Will submit automatically when you reconnect.</div>';
+                out.innerHTML = '<div class="alert alert-warning">Saved offline. Will submit when you reconnect.</div>';
             } else {
                 out.innerHTML = '<div class="alert alert-success">Request submitted.</div>';
-                submitted.unshift({ id: res.id, subject: res.subject, status: res.status });
-                renderRequests();
             }
             document.getElementById('subject').value = '';
             document.getElementById('description').value = '';
+            loadRequests();
         } catch (e) {
-            const cls = e.offline ? 'alert-warning' : 'alert-danger';
-            out.innerHTML = '<div class="alert ' + cls + '">' + e.message + '</div>';
+            out.innerHTML = '<div class="alert alert-danger">' + e.message + '</div>';
         }
     });
 
@@ -156,14 +130,12 @@
         if (!confirmId) return;
         try {
             await apiFetch('/api/tenant/maintenance/' + confirmId + '/confirm', { method: 'POST' });
-            const item = submitted.find((r) => String(r.id) === String(confirmId));
-            if (item) item.status = 'resolved';
-            renderRequests();
+            loadRequests();
         } catch (e) {
-            document.getElementById('submit-result').innerHTML = '<div class="alert alert-danger">' + e.message + '</div>';
+            document.getElementById('requests-error').innerHTML = '<div class="alert alert-danger m-2">' + e.message + '</div>';
         }
     });
 
-    renderRequests();
+    loadRequests();
 </script>
 @endpush

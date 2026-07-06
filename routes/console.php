@@ -20,7 +20,6 @@ Artisan::command('inspire', function () {
 */
 Artisan::command('payments:flag-overdue', function () {
     $count = 0;
-
     Payment::where('status', 'pending')
         ->whereNotNull('due_date')
         ->whereDate('due_date', '<', now()->toDateString())
@@ -35,8 +34,18 @@ Artisan::command('payments:flag-overdue', function () {
                 }
             }
         });
-
     $this->info("Flagged {$count} overdue payment(s).");
 })->purpose('Flag pending payments past their due date');
 
 Schedule::command('payments:flag-overdue')->dailyAt('01:00');
+
+/*
+|--------------------------------------------------------------------------
+| Scheduled: generate next month's rent invoice
+|--------------------------------------------------------------------------
+| See app/Console/Commands/GenerateMonthlyInvoices.php for the full logic.
+| Runs daily so a new invoice appears promptly once the current one is
+| verified, rather than waiting for a fixed monthly date that might miss
+| tenants whose payment cycles don't align to the 1st of the month.
+*/
+Schedule::command('payments:generate-monthly')->dailyAt('02:00');

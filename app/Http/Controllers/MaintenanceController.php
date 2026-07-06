@@ -19,7 +19,6 @@ class MaintenanceController extends Controller
     /**
      * GET /api/landlord/maintenance
      * All maintenance requests across this landlord's properties.
-     * Supports optional filters: status, priority, property_id (per FR 3.6).
      */
     public function landlordIndex(Request $request): JsonResponse
     {
@@ -38,6 +37,23 @@ class MaintenanceController extends Controller
         }
 
         return response()->json($query->latest()->paginate(20));
+    }
+
+    /**
+     * GET /api/tenant/maintenance
+     * The authenticated tenant's own maintenance requests — active and
+     * historical (per FR 5.3: "View: Active and historical requests").
+     * Includes the linked task so the frontend can show the correct action
+     * (Confirm only once the caretaker has completed their part).
+     */
+    public function tenantIndex(Request $request): JsonResponse
+    {
+        $requests = MaintenanceRequest::where('tenant_id', $request->user()->id)
+            ->with('task:id,maintenance_request_id,status,is_completed_by_caretaker,tenant_confirmed,completion_notes')
+            ->latest()
+            ->get();
+
+        return response()->json($requests);
     }
 
     /**
@@ -83,9 +99,6 @@ class MaintenanceController extends Controller
 
     /**
      * POST /api/landlord/maintenance/{maintenance}/approve
-     * Landlord approves a submitted request; a Task is auto-generated for an
-     * active caretaker of the landlord. Blocked if the property has no
-     * caretaker (per FR 3.6: "Block approval if property has no caretaker").
      */
     public function approve(ApproveMaintenanceRequest $request, MaintenanceRequest $maintenance): JsonResponse
     {

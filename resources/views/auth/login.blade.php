@@ -13,7 +13,12 @@
 </div>
 <div class="mb-3">
     <label class="form-label">Password</label>
-    <input type="password" class="form-control" id="password" autocomplete="current-password">
+    <div class="input-group">
+        <input type="password" class="form-control" id="password" autocomplete="current-password">
+        <button class="btn btn-outline-secondary toggle-pw" type="button" data-target="password">
+            <i class="fas fa-eye"></i>
+        </button>
+    </div>
 </div>
 
 <button class="btn btn-primary w-100" id="login-btn">Sign In</button>
@@ -23,8 +28,24 @@
 </div>
 
 <script>
+    document.querySelectorAll('.toggle-pw').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const input = document.getElementById(btn.getAttribute('data-target'));
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+
     const roleHome = {
-        admin: '/caretaker/dashboard',
+        admin: '/admin/dashboard',
         landlord: '/landlord/dashboard',
         caretaker: '/caretaker/dashboard',
         tenant: '/tenant/dashboard',

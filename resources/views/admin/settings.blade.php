@@ -1,4 +1,4 @@
-@extends('layouts.tenant')
+@extends('layouts.admin')
 
 @section('title', 'Settings')
 
@@ -40,9 +40,7 @@
                         <label class="form-label">Current Password</label>
                         <div class="input-group">
                             <input type="password" class="form-control" id="current_password">
-                            <button class="btn btn-outline-secondary toggle-pw" type="button" data-target="current_password">
-                                <i class="fas fa-eye"></i>
-                            </button>
+                            <button class="btn btn-outline-secondary toggle-pw" type="button" data-target="current_password"><i class="fas fa-eye"></i></button>
                         </div>
                     </div>
 
@@ -50,9 +48,7 @@
                         <label class="form-label">New Password</label>
                         <div class="input-group">
                             <input type="password" class="form-control" id="new_password">
-                            <button class="btn btn-outline-secondary toggle-pw" type="button" data-target="new_password">
-                                <i class="fas fa-eye"></i>
-                            </button>
+                            <button class="btn btn-outline-secondary toggle-pw" type="button" data-target="new_password"><i class="fas fa-eye"></i></button>
                         </div>
                     </div>
 
@@ -60,9 +56,7 @@
                         <label class="form-label">Confirm New Password</label>
                         <div class="input-group">
                             <input type="password" class="form-control" id="new_password_confirmation">
-                            <button class="btn btn-outline-secondary toggle-pw" type="button" data-target="new_password_confirmation">
-                                <i class="fas fa-eye"></i>
-                            </button>
+                            <button class="btn btn-outline-secondary toggle-pw" type="button" data-target="new_password_confirmation"><i class="fas fa-eye"></i></button>
                         </div>
                     </div>
 
@@ -78,22 +72,20 @@
 <script>
     function xsrf() { return decodeURIComponent((document.cookie.match(/XSRF-TOKEN=([^;]+)/) || [])[1] || ''); }
 
-    // Show/hide toggle for any password field marked with class "toggle-pw"
-    // and a data-target pointing at the input's id. Reusable across pages.
-    document.querySelectorAll('.toggle-pw').forEach((btn) => {
-        btn.addEventListener('click', () => {
-            const input = document.getElementById(btn.getAttribute('data-target'));
-            const icon = btn.querySelector('i');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        });
+    document.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('.toggle-pw');
+        if (!btn) return;
+        const input = document.getElementById(btn.getAttribute('data-target'));
+        const icon = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
     });
 
     async function apiFetch(path, options = {}) {
