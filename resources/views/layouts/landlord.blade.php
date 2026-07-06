@@ -1,10 +1,3 @@
-{{-- resources/views/layouts/landlord.blade.php --}}
-{{--
-    Base shell for the Landlord portal. Does NOT @extends anything.
-    Landlord pages do @extends('layouts.landlord') and fill @yield('content').
-    Same fixes as the tenant shell: real CSRF logout form, full_name, PWA manifest.
-    NOTE: verify the nav items below match your real premade landlord layout — swap if different.
---}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 

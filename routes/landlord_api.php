@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LandlordController;
+use App\Http\Controllers\MaintenanceController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\UnitController;
@@ -21,7 +23,8 @@ use Illuminate\Support\Facades\Route;
 |
 | Both developers edit only their own route file — zero route conflicts.
 | The maintenance approve/reject endpoints remain in Dev B's routes/api.php
-| (they call the Dev-B-owned MaintenanceController).
+| (they call the Dev-B-owned MaintenanceController), but the landlordIndex
+| LISTING endpoint below is registered here since it's a landlord-facing page.
 */
 
 Route::middleware(['auth:sanctum', 'role:landlord,admin', 'activity'])
@@ -39,5 +42,7 @@ Route::middleware(['auth:sanctum', 'role:landlord,admin', 'activity'])
 
         Route::get('/caretakers', [LandlordController::class, 'caretakers']);
         Route::post('/caretakers', [LandlordController::class, 'storeCaretaker']);
-        Route::get('/payments', [\App\Http\Controllers\PaymentController::class, 'landlordIndex']);
+
+        Route::get('/payments', [PaymentController::class, 'landlordIndex']);
+        Route::get('/maintenance', [MaintenanceController::class, 'landlordIndex']);
     });

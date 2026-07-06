@@ -1,9 +1,3 @@
-{{-- resources/views/layouts/caretaker.blade.php --}}
-{{--
-    Base shell for the Caretaker portal. Does NOT @extends anything.
-    Caretaker pages do @extends('layouts.caretaker') and fill @yield('content').
-    Same fixes as tenant/landlord shells. Verify nav matches your real premade layout.
---}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 

@@ -1,4 +1,3 @@
-{{-- resources/views/layouts/tenant.blade.php --}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
@@ -6,6 +5,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d6efd">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
     <title>@yield('title', 'Tenant Portal') - Rental System</title>
 
@@ -21,10 +24,13 @@
 </head>
 
 <body>
+    <form id="logout-form" method="POST" action="{{ route('logout') }}" class="d-none">
+        @csrf
+    </form>
+
     <div class="tenant-shell">
         {{-- Desktop Sidebar --}}
         <aside class="tenant-sidebar d-none d-lg-flex flex-column">
-            {{-- Brand --}}
             <div class="sidebar-brand">
                 <div class="brand-chip">RS</div>
                 <div>
@@ -33,7 +39,6 @@
                 </div>
             </div>
 
-            {{-- Navigation --}}
             <nav class="nav nav-pills flex-column gap-1">
                 <a class="nav-link {{ request()->routeIs('tenant.dashboard') ? 'active' : '' }}"
                     href="{{ route('tenant.dashboard') }}">
@@ -53,7 +58,6 @@
                 </a>
             </nav>
 
-            {{-- Footer --}}
             <div class="sidebar-footer">
                 <div class="small text-muted mb-1">Signed in as</div>
                 <div class="user-name">{{ Auth::user()->full_name ?? 'Tenant' }}</div>
@@ -61,13 +65,10 @@
                 <div class="mt-2">
                     <span class="badge bg-success">Active</span>
                 </div>
-                {{-- FIXED BUG 2: Proper logout form --}}
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="btn btn-outline-secondary btn-sm w-100 mt-2">
-                        <i class="fas fa-sign-out-alt me-2"></i> Logout
-                    </button>
-                </form>
+                <button type="submit" form="logout-form"
+                    class="btn btn-outline-secondary btn-sm w-100 mt-2">
+                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                </button>
             </div>
         </aside>
 
@@ -85,16 +86,14 @@
                         <i class="fas fa-user"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#">Profile</a></li>
                         <li><a class="dropdown-item" href="{{ route('tenant.settings') }}">Settings</a></li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
                         <li>
-                            <form action="{{ route('logout') }}" method="POST">
-                                @csrf
-                                <button type="submit" class="dropdown-item text-danger">Logout</button>
-                            </form>
+                            <button type="submit" form="logout-form" class="dropdown-item text-danger">
+                                Logout
+                            </button>
                         </li>
                     </ul>
                 </div>
@@ -146,3 +145,4 @@
 </body>
 
 </html>
+PHPEOF

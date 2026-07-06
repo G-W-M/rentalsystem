@@ -17,6 +17,30 @@ use Illuminate\Support\Facades\DB;
 class MaintenanceController extends Controller
 {
     /**
+     * GET /api/landlord/maintenance
+     * All maintenance requests across this landlord's properties.
+     * Supports optional filters: status, priority, property_id (per FR 3.6).
+     */
+    public function landlordIndex(Request $request): JsonResponse
+    {
+        $query = MaintenanceRequest::whereHas('property', fn ($q) =>
+                $q->where('landlord_id', $request->user()->id))
+            ->with('tenant.user:id,full_name', 'unit:id,unit_number', 'property:id,name');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+        if ($request->filled('priority')) {
+            $query->where('priority', $request->input('priority'));
+        }
+        if ($request->filled('property_id')) {
+            $query->where('property_id', $request->input('property_id'));
+        }
+
+        return response()->json($query->latest()->paginate(20));
+    }
+
+    /**
      * POST /api/tenant/maintenance
      * Tenant raises a request for their CURRENT unit. Unit and property are
      * derived from the tenant's active occupancy, never trusted from the client.
@@ -60,8 +84,8 @@ class MaintenanceController extends Controller
     /**
      * POST /api/landlord/maintenance/{maintenance}/approve
      * Landlord approves a submitted request; a Task is auto-generated for an
-     * active caretaker of the landlord. If none exists, approval is rejected
-     * with guidance (spec edge case).
+     * active caretaker of the landlord. Blocked if the property has no
+     * caretaker (per FR 3.6: "Block approval if property has no caretaker").
      */
     public function approve(ApproveMaintenanceRequest $request, MaintenanceRequest $maintenance): JsonResponse
     {
@@ -81,7 +105,7 @@ class MaintenanceController extends Controller
 
         if ($caretakerId === null) {
             return response()->json([
-                'message' => 'Approved cannot proceed: no active caretaker available to assign.',
+                'message' => 'Cannot approve: no active caretaker available to assign.',
             ], 422);
         }
 
@@ -152,8 +176,7 @@ class MaintenanceController extends Controller
     /**
      * POST /api/tenant/maintenance/{maintenance}/confirm
      * The double sign-off. Tenant confirms the caretaker's completed work,
-     * which closes the task and resolves the request. The caretaker can never
-     * self-confirm.
+     * which closes the task and resolves the request.
      */
     public function confirm(Request $request, MaintenanceRequest $maintenance): JsonResponse
     {
