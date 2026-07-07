@@ -1,26 +1,50 @@
-// Import this from resources/js/app.js:  import './pwa-register';
-// Registers the service worker and requests a background sync when back online.
+/*
+ * resources/js/pwa-register.js
+ * Registers the service worker and ensures the offline queue gets replayed
+ * reliably on page load and whenever the browser regains connectivity.
+ * Uses a direct postMessage trigger (confirmed reliable) rather than relying
+ * solely on the Background Sync API.
+ */
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', async () => {
-    try {
-      const reg = await navigator.serviceWorker.register('/sw.js');
-      // Trigger replay of any queued offline writes when connectivity returns.
-      window.addEventListener('online', () => {
-        if ('sync' in reg) reg.sync.register('rental-sync').catch(() => {});
-      });
-    } catch (e) {
-      console.error('SW registration failed', e);
-    }
-  });
-}
+    var swRegistration = null;
 
-// Same-origin API helper: gets CSRF cookie then sends credentials.
-export async function api(path, options = {}) {
-  await fetch('/sanctum/csrf-cookie', { credentials: 'include' });
-  return fetch(path, {
-    credentials: 'include',
-    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json',
-      'X-XSRF-TOKEN': decodeURIComponent((document.cookie.match(/XSRF-TOKEN=([^;]+)/) || [])[1] || '') },
-    ...options,
-  });
+    function triggerReplay() {
+        if (!navigator.onLine) return;
+        var readyPromise = swRegistration ? Promise.resolve(swRegistration) : navigator.serviceWorker.ready;
+        readyPromise.then(function (reg) {
+            if (reg && reg.active) {
+                reg.active.postMessage({ type: 'REPLAY_NOW' });
+            }
+        });
+    }
+
+    window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js').then(function (reg) {
+            swRegistration = reg;
+
+            if (reg.sync) {
+                reg.sync.register('rental-sync').catch(function () {
+                    // Background Sync not supported/permitted; the direct
+                    // trigger above is the real mechanism anyway.
+                });
+            }
+
+            triggerReplay();
+        }).catch(function (e) {
+            console.error('Service worker registration failed', e);
+        });
+    });
+
+    window.addEventListener('online', function () {
+        triggerReplay();
+    });
+
+    navigator.serviceWorker.addEventListener('message', function (event) {
+        var data = event.data;
+        if (data && data.type === 'REPLAY_RESULT') {
+            console.log('Offline queue replay result: ok=' + data.ok + ' status=' + data.status);
+        } else if (data && data.type === 'REPLAY_ERROR') {
+            console.log('Offline queue replay error: ' + data.message);
+        }
+    });
 }

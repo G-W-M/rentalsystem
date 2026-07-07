@@ -154,24 +154,23 @@
         }
 
         document.getElementById('create-tenant-submit').addEventListener('click', async () => {
-            try {
-                await apiFetch('/api/landlord/tenants', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        full_name: document.getElementById('t-name').value,
-                        email: document.getElementById('t-email').value,
-                        username: document.getElementById('t-username').value,
-                        phone: document.getElementById('t-phone').value,
-                        password: document.getElementById('t-password').value,
-                    }),
-                });
-                bootstrap.Modal.getInstance(document.getElementById('createTenantModal')).hide();
-                loadTenants();
-            } catch (e) {
-                showError('create-tenant-error', e);
-            }
+    try {
+        const res = await apiFetch('/api/landlord/tenants', {
+            method: 'POST',
+            body: JSON.stringify({
+                full_name: document.getElementById('t-name').value,
+                email: document.getElementById('t-email').value,
+                username: document.getElementById('t-username').value,
+                phone: document.getElementById('t-phone').value,
+            }),
         });
-
+        bootstrap.Modal.getInstance(document.getElementById('createTenantModal')).hide();
+        alert('Tenant created. Temporary password: ' + res.password);
+        loadTenants();
+    } catch (e) {
+        showError('create-tenant-error', e);
+    }
+});
         tenantBody.addEventListener('click', async (ev) => {
             const id = ev.target.getAttribute('data-alloc');
             if (!id) return;

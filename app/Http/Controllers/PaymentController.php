@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
+    /**
+     * GET /api/tenant/payments
+     */
     public function tenantHistory(Request $request): JsonResponse
     {
         $payments = Payment::where('tenant_id', $request->user()->id)
@@ -21,6 +24,9 @@ class PaymentController extends Controller
         return response()->json($payments);
     }
 
+    /**
+     * POST /api/tenant/payments/{payment}/transaction-code
+     */
     public function submitTransactionCode(Request $request, Payment $payment): JsonResponse
     {
         abort_unless($payment->tenant_id === $request->user()->id, 403, 'Not your payment.');
@@ -47,14 +53,37 @@ class PaymentController extends Controller
         ]);
     }
 
+    /**
+     * POST /api/caretaker/payments/{payment}/verify
+     *
+     * HARD RULES:
+     *   1. The amount can NEVER be supplied by the caretaker — it is read
+     *      from the stored record only.
+     *   2. The caretaker must independently enter the transaction code they
+     *      were given (e.g. by the tenant, verbally or via receipt) and it
+     *      must EXACTLY MATCH the code the tenant already submitted via
+     *      submitTransactionCode(). A mismatch hard-blocks verification —
+     *      this is a second, independent confirmation of the same
+     *      transaction, not a formality.
+     */
     public function verify(Request $request, Payment $payment): JsonResponse
     {
+        $request->validate([
+            'transaction_code' => ['required', 'string', 'max:100'],
+        ]);
+
         if ($payment->status === 'completed') {
             return response()->json(['message' => 'Already verified.'], 422);
         }
 
         if ($payment->transaction_id === null) {
             return response()->json(['message' => 'No transaction code to verify yet.'], 422);
+        }
+
+        if (! hash_equals((string) $payment->transaction_id, (string) $request->input('transaction_code'))) {
+            return response()->json([
+                'message' => 'The code you entered does not match the tenant\'s submitted transaction code. Verification blocked.',
+            ], 422);
         }
 
         $payment = DB::transaction(function () use ($payment, $request) {
@@ -85,7 +114,6 @@ class PaymentController extends Controller
 
     /**
      * GET /api/landlord/payments
-     * Scoped to this landlord's units only.
      */
     public function landlordIndex(Request $request): JsonResponse
     {
@@ -105,7 +133,6 @@ class PaymentController extends Controller
 
     /**
      * GET /api/admin/payments
-     * Unscoped — admin sees every payment across every landlord.
      */
     public function adminIndex(Request $request): JsonResponse
     {

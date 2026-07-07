@@ -30,6 +30,7 @@ Route::middleware(['auth:sanctum', 'role:landlord,admin', 'activity'])
 
         Route::get('/caretakers', [LandlordController::class, 'caretakers']);
         Route::post('/caretakers', [LandlordController::class, 'storeCaretaker']);
+        Route::put('/caretakers/{caretaker}/assign-property', [LandlordController::class, 'assignCaretakerToProperty']);
 
         Route::get('/payments', [PaymentController::class, 'landlordIndex']);
         Route::get('/maintenance', [\App\Http\Controllers\MaintenanceController::class, 'landlordIndex']);

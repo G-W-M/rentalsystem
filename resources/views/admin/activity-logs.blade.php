@@ -59,18 +59,30 @@
         return body;
     }
 
-    function fmt(iso) {
+    // Full, explicit timestamp — date AND time, never just a relative string.
+    function timestamp(iso) {
         if (!iso) return '-';
         const d = new Date(iso);
         if (isNaN(d.getTime())) return iso;
-        return d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        return d.toLocaleString(undefined, {
+            year: 'numeric', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+        });
+    }
+
+    function duration(mins) {
+        if (mins === null || mins === undefined) return '-';
+        if (mins < 60) return mins + ' min';
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        return h + 'h ' + m + 'm';
     }
 
     let currentTab = 'sessions';
 
     async function loadSessions() {
         document.getElementById('table-head').innerHTML =
-            '<tr><th>User</th><th>Role</th><th>Device</th><th>IP</th><th>Login</th><th>Logout</th><th>Status</th></tr>';
+            '<tr><th>User</th><th>Role</th><th>Device</th><th>IP</th><th>Login Timestamp</th><th>Logout Timestamp</th><th>Duration</th><th>Status</th></tr>';
         const device = document.getElementById('f-device').value;
         const active = document.getElementById('f-active').value;
         const params = new URLSearchParams();
@@ -81,29 +93,30 @@
         const items = page.data || [];
         document.getElementById('table-body').innerHTML = items.length
             ? items.map((s) => '<tr><td>' + s.full_name + '</td><td><span class="badge bg-secondary">' + s.role + '</span></td><td>' +
-                s.device_type + '</td><td>' + (s.ip_address || '-') + '</td><td>' + fmt(s.login_time) + '</td><td>' + fmt(s.logout_time) +
-                '</td><td>' + (s.is_active ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">Ended</span>') + '</td></tr>').join('')
-            : '<tr><td colspan="7" class="text-muted p-3">No sessions found</td></tr>';
+                s.device_type + '</td><td>' + (s.ip_address || '-') + '</td><td>' + timestamp(s.login_time) + '</td><td>' +
+                timestamp(s.logout_time) + '</td><td>' + duration(s.duration_minutes) + '</td><td>' +
+                (s.is_active ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">Ended</span>') + '</td></tr>').join('')
+            : '<tr><td colspan="8" class="text-muted p-3">No sessions found</td></tr>';
     }
 
     async function loadAudit() {
-        document.getElementById('table-head').innerHTML = '<tr><th>User</th><th>Action</th><th>IP</th><th>When</th></tr>';
+        document.getElementById('table-head').innerHTML = '<tr><th>User</th><th>Action</th><th>IP</th><th>Timestamp</th></tr>';
         const page = await apiFetch('/api/admin/audit-trails');
         const items = page.data || [];
         document.getElementById('table-body').innerHTML = items.length
             ? items.map((a) => '<tr><td>' + (a.full_name || 'System') + '</td><td>' + a.action + '</td><td>' +
-                (a.ip_address || '-') + '</td><td>' + fmt(a.created_at) + '</td></tr>').join('')
+                (a.ip_address || '-') + '</td><td>' + timestamp(a.created_at) + '</td></tr>').join('')
             : '<tr><td colspan="4" class="text-muted p-3">No audit entries found</td></tr>';
     }
 
     async function loadCaretakerActivity() {
         document.getElementById('table-head').innerHTML =
-            '<tr><th>Caretaker</th><th>Property</th><th>Type</th><th>Description</th><th>Date</th><th>Status</th></tr>';
+            '<tr><th>Caretaker</th><th>Property</th><th>Type</th><th>Description</th><th>Timestamp</th><th>Status</th></tr>';
         const page = await apiFetch('/api/admin/caretaker-activity');
         const items = page.data || [];
         document.getElementById('table-body').innerHTML = items.length
             ? items.map((l) => '<tr><td>' + l.caretaker_name + '</td><td>' + (l.property_name || '-') + '</td><td>' +
-                l.activity_type + '</td><td>' + l.description + '</td><td>' + fmt(l.log_date) + '</td><td><span class="badge bg-secondary">' +
+                l.activity_type + '</td><td>' + l.description + '</td><td>' + timestamp(l.log_date) + '</td><td><span class="badge bg-secondary">' +
                 l.status + '</span></td></tr>').join('')
             : '<tr><td colspan="6" class="text-muted p-3">No activity logs found</td></tr>';
     }

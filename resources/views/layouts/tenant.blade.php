@@ -47,6 +47,9 @@
         <li class="dropdown-item text-muted small">Loading...</li>
     </ul>
 </div>
+<button class="btn btn-outline-secondary btn-sm rounded-circle me-2" id="theme-toggle" title="Toggle dark mode">
+    <i class="fas fa-moon"></i>
+</button>
             <nav class="nav nav-pills flex-column gap-1">
                 <a class="nav-link {{ request()->routeIs('tenant.dashboard') ? 'active' : '' }}"
                     href="{{ route('tenant.dashboard') }}">

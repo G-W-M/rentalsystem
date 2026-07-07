@@ -8,6 +8,7 @@ use App\Http\Controllers\ExportController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +35,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications/unread-count', [NotificationsController::class, 'unreadCount']);
     Route::post('/notifications/{notification}/read', [NotificationsController::class, 'markRead']);
     Route::post('/notifications/read-all', [NotificationsController::class, 'markAllRead']);
+
+    // Theme is readable by everyone so it applies across all roles' UI.
+    Route::get('/settings/theme', [SettingsController::class, 'getTheme']);
 });
 
 // ----- Admin only -----
@@ -52,6 +56,10 @@ Route::middleware(['auth:sanctum', 'role:admin', 'activity'])
         Route::get('/audit-trails', [ActivityLogController::class, 'auditTrails']);
         Route::get('/caretaker-activity', [ActivityLogController::class, 'caretakerActivity']);
 
+        Route::put('/settings/theme', [SettingsController::class, 'updateTheme']);
+
+        Route::get('/payments', [PaymentController::class, 'adminIndex']);
+        Route::get('/maintenance', [MaintenanceController::class, 'adminIndex']);
         Route::get('/payments/export/csv', [ExportController::class, 'paymentsCsv']);
         Route::get('/payments/export/pdf', [ExportController::class, 'paymentsPdf']);
         Route::get('/maintenance/export/csv', [ExportController::class, 'maintenanceCsv']);

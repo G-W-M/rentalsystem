@@ -7,21 +7,35 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Admin session/activity viewer (distinct from Caretaker daily activity
- * logs, which live in DailyActivityLogController). Surfaces three existing
- * tables for admin oversight: sessions, activity_logs, audit_trails.
+ * Admin session/activity viewer. Three distinct views:
+ *   - sessions()          -> login/logout history with explicit timestamps + duration
+ *   - auditTrails()       -> write-action audit trail
+ *   - caretakerActivity() -> the rich per-activity log (activity_logs table)
  */
 class ActivityLogController extends Controller
 {
     /**
      * GET /api/admin/sessions
      * Filters: user_id, device_type, is_active (1/0).
+     * Returns explicit login_time, logout_time, and a computed duration in
+     * minutes (null if the session is still active / has no logout_time).
      */
     public function sessions(Request $request): JsonResponse
     {
         $query = DB::table('sessions')
             ->join('users', 'users.id', '=', 'sessions.user_id')
-            ->select('sessions.*', 'users.full_name', 'users.email', 'users.role');
+            ->select(
+                'sessions.id',
+                'sessions.user_id',
+                'sessions.device_type',
+                'sessions.ip_address',
+                'sessions.login_time',
+                'sessions.logout_time',
+                'sessions.is_active',
+                'users.full_name',
+                'users.email',
+                'users.role'
+            );
 
         if ($request->filled('user_id')) {
             $query->where('sessions.user_id', $request->input('user_id'));
@@ -33,12 +47,25 @@ class ActivityLogController extends Controller
             $query->where('sessions.is_active', $request->boolean('is_active'));
         }
 
-        return response()->json($query->orderByDesc('sessions.login_time')->paginate(25));
+        $sessions = $query->orderByDesc('sessions.login_time')->paginate(25);
+
+        // Compute duration in minutes for each row (done in PHP rather than
+        // SQL so it works identically across MySQL/SQLite during testing).
+        $sessions->getCollection()->transform(function ($s) {
+            $s->duration_minutes = null;
+            if ($s->login_time && $s->logout_time) {
+                $login = \Carbon\Carbon::parse($s->login_time);
+                $logout = \Carbon\Carbon::parse($s->logout_time);
+                $s->duration_minutes = $logout->diffInMinutes($login);
+            }
+            return $s;
+        });
+
+        return response()->json($sessions);
     }
 
     /**
      * GET /api/admin/audit-trails
-     * Filters: user_id, date_from, date_to.
      */
     public function auditTrails(Request $request): JsonResponse
     {
@@ -61,8 +88,6 @@ class ActivityLogController extends Controller
 
     /**
      * GET /api/admin/caretaker-activity
-     * The RICH per-activity log (activity_logs table). Admin-wide,
-     * unscoped. Filters: caretaker_id, property_id, status.
      */
     public function caretakerActivity(Request $request): JsonResponse
     {

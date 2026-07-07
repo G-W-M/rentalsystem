@@ -18,7 +18,6 @@ class MaintenanceController extends Controller
 {
     /**
      * GET /api/landlord/maintenance
-     * Scoped to this landlord's properties.
      */
     public function landlordIndex(Request $request): JsonResponse
     {
@@ -41,7 +40,6 @@ class MaintenanceController extends Controller
 
     /**
      * GET /api/admin/maintenance
-     * Unscoped — admin sees every maintenance request across every landlord.
      */
     public function adminIndex(Request $request): JsonResponse
     {
@@ -111,6 +109,13 @@ class MaintenanceController extends Controller
 
     /**
      * POST /api/landlord/maintenance/{maintenance}/approve
+     *
+     * CHANGED: the caretaker assigned is now STRICTLY the one caretaker
+     * assigned to the request's specific property_id (caretakers.property_id).
+     * "Any active caretaker of the landlord" is no longer used — a request
+     * only ever goes to the caretaker actually responsible for that
+     * property. If that property has no assigned caretaker, approval is
+     * blocked with a clear message telling the landlord to assign one.
      */
     public function approve(ApproveMaintenanceRequest $request, MaintenanceRequest $maintenance): JsonResponse
     {
@@ -124,13 +129,13 @@ class MaintenanceController extends Controller
             return response()->json(['message' => 'Only submitted requests can be approved.'], 422);
         }
 
-        $caretakerId = Caretaker::where('landlord_id', $request->user()->id)
+        $caretakerId = Caretaker::where('property_id', $maintenance->property_id)
             ->where('is_active', true)
             ->value('user_id');
 
         if ($caretakerId === null) {
             return response()->json([
-                'message' => 'Cannot approve: no active caretaker available to assign.',
+                'message' => 'Cannot approve: no caretaker is assigned to this property yet. Assign one first.',
             ], 422);
         }
 

@@ -15,6 +15,7 @@ class Caretaker extends Model
     protected $fillable = [
         'user_id',
         'landlord_id',
+        'property_id',
         'id_number',
         'emergency_contact',
         'emergency_phone',
@@ -46,6 +47,11 @@ class Caretaker extends Model
     public function landlord(): BelongsTo
     {
         return $this->belongsTo(Landlord::class, 'landlord_id', 'user_id');
+    }
+
+    public function property(): BelongsTo
+    {
+        return $this->belongsTo(Property::class, 'property_id');
     }
 
     public function tasks(): HasMany

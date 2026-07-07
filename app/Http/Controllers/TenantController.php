@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Landlord\AllocateTenantRequest;
-use App\Http\Requests\Landlord\StoreTenantRequest;
 use App\Models\Payment;
 use App\Models\Tenant;
 use App\Models\TenantOccupancy;
@@ -14,10 +13,14 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class TenantController extends Controller
 {
-    /** GET /api/landlord/tenants — tenants belonging to this landlord. */
+    /**
+     * GET /api/landlord/tenants
+     */
     public function index(Request $request): JsonResponse
     {
         $tenants = Tenant::where('landlord_id', $request->user()->id)
@@ -29,18 +32,35 @@ class TenantController extends Controller
 
     /**
      * POST /api/landlord/tenants
-     * Creates the user account AND the tenant profile in one transaction.
-     * No self-registration: the landlord creates the tenant.
+     * Password is now auto-generated (not landlord-typed) and returned in
+     * the response, matching the caretaker creation pattern — no real
+     * email service configured, so this is the on-screen dev-mode
+     * equivalent of "auto email credentials."
      */
-    public function store(StoreTenantRequest $request): JsonResponse
+    public function store(Request $request): JsonResponse
     {
-        $tenant = DB::transaction(function () use ($request) {
+        $data = $request->validate([
+            'full_name'         => ['required', 'string', 'max:100'],
+            'email'             => ['required', 'email', 'max:100', Rule::unique('users', 'email')],
+            'username'          => ['required', 'string', 'max:50', Rule::unique('users', 'username')],
+            'phone'             => ['nullable', 'string', 'max:20'],
+            'id_number'         => ['nullable', 'string', 'max:50'],
+            'nationality'       => ['nullable', 'string', 'max:100'],
+            'gender'            => ['nullable', 'in:male,female,other'],
+            'employment_status' => ['nullable', 'in:employed,self-employed,student,retired'],
+            'emergency_contact' => ['nullable', 'string', 'max:100'],
+            'emergency_phone'   => ['nullable', 'string', 'max:20'],
+        ]);
+
+        $generatedPassword = Str::random(10);
+
+        $tenant = DB::transaction(function () use ($data, $request, $generatedPassword) {
             $user = User::create([
-                'full_name' => $request->full_name,
-                'email'     => $request->email,
-                'username'  => $request->username,
-                'phone'     => $request->phone,
-                'password'  => Hash::make($request->password),
+                'full_name' => $data['full_name'],
+                'email'     => $data['email'],
+                'username'  => $data['username'],
+                'phone'     => $data['phone'] ?? null,
+                'password'  => Hash::make($generatedPassword),
                 'role'      => 'tenant',
                 'is_active' => true,
             ]);
@@ -48,24 +68,25 @@ class TenantController extends Controller
             return Tenant::create([
                 'user_id'           => $user->id,
                 'landlord_id'       => $request->user()->id,
-                'id_number'         => $request->id_number,
-                'nationality'       => $request->nationality,
-                'gender'            => $request->gender,
-                'employment_status' => $request->employment_status,
-                'emergency_contact' => $request->emergency_contact,
-                'emergency_phone'   => $request->emergency_phone,
+                'id_number'         => $data['id_number'] ?? null,
+                'nationality'       => $data['nationality'] ?? null,
+                'gender'            => $data['gender'] ?? null,
+                'employment_status' => $data['employment_status'] ?? null,
+                'emergency_contact' => $data['emergency_contact'] ?? null,
+                'emergency_phone'   => $data['emergency_phone'] ?? null,
                 'is_active'         => true,
             ]);
         });
 
-        return response()->json($tenant->load('user:id,full_name,email'), 201);
+        return response()->json([
+            'tenant'   => $tenant->load('user:id,full_name,email'),
+            'password' => $generatedPassword,
+            'message'  => 'Tenant created. Share these credentials with them directly (no email service configured).',
+        ], 201);
     }
 
     /**
-     * POST /api/landlord/tenants/{tenant}/allocate  ({tenant} = user_id)
-     * Transaction: create current occupancy, set unit occupied, set move-in date,
-     * and generate the first pending rent invoice. Invariants (unit available,
-     * tenant has no active occupancy) are enforced by AllocateTenantRequest.
+     * POST /api/landlord/tenants/{tenant}/allocate
      */
     public function allocate(AllocateTenantRequest $request, int $tenant): JsonResponse
     {
@@ -110,7 +131,6 @@ class TenantController extends Controller
 
     /**
      * POST /api/landlord/tenants/{tenant}/deallocate
-     * Transaction: end the current occupancy, free the unit, set move-out date.
      */
     public function deallocate(Request $request, int $tenant): JsonResponse
     {
