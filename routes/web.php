@@ -4,7 +4,7 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\PaymentController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes — Developer B domain
@@ -47,9 +47,15 @@ Route::middleware('auth')->group(function () {
     Route::view('/caretaker/activity-logs', 'caretaker.activity-logs')->name('caretaker.activity-logs');
 
     // Tenant
+    Route::middleware(['auth', 'role:tenant'])->group(function () {
     Route::view('/tenant/dashboard', 'tenant.dashboard')->name('tenant.dashboard');
     Route::view('/tenant/unit', 'tenant.unit')->name('tenant.unit');
     Route::view('/tenant/maintenance', 'tenant.maintenance-request')->name('tenant.maintenance');
     Route::view('/tenant/payments', 'tenant.payments')->name('tenant.payments');
     Route::view('/tenant/settings', 'tenant.settings.settings')->name('tenant.settings');
+
+    Route::get('/tenant/pay-rent', [PaymentController::class, 'payRent'])->name('tenant.pay-rent');
+    Route::post('/tenant/payments/{payment}/submit', [PaymentController::class, 'submitPayment'])->name('tenant.payments.submit');
+    Route::get('/tenant/payments/{payment}/receipt', [PaymentController::class, 'downloadReceipt'])->name('tenant.payments.receipt');
+});
 });

@@ -104,10 +104,12 @@ Route::middleware(['auth:sanctum', 'role:tenant', 'activity', 'offline.sync'])
     ->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'tenant']);
 
+        Route::get('/pay-rent', [PaymentController::class, 'payRent']);
+        Route::get('/payments', [PaymentController::class, 'tenantHistory']);
+        Route::post('/payments/{payment}/submit', [PaymentController::class, 'submitPayment']);
+        Route::post('/payments/{payment}/transaction-code', [PaymentController::class, 'submitTransactionCode']);
+
         Route::get('/maintenance', [MaintenanceController::class, 'tenantIndex']);
         Route::post('/maintenance', [MaintenanceController::class, 'store']);
         Route::post('/maintenance/{maintenance}/confirm', [MaintenanceController::class, 'confirm']);
-
-        Route::get('/payments', [PaymentController::class, 'tenantHistory']);
-        Route::post('/payments/{payment}/transaction-code', [PaymentController::class, 'submitTransactionCode']);
     });
