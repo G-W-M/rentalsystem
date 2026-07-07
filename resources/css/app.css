@@ -560,10 +560,15 @@ body {
     .mobile-header {
         display: flex;
     }
-    [data-theme="dark"] {
+}/* ========================================
+   DARK MODE THEME - Place this OUTSIDE the media query
+   ======================================== */
+
+[data-theme="dark"] {
     background-color: #1a1d21;
     color: #e8e8e8;
 }
+
 [data-theme="dark"] .card,
 [data-theme="dark"] .landlord-sidebar,
 [data-theme="dark"] .caretaker-sidebar,
@@ -573,10 +578,50 @@ body {
     color: #e8e8e8;
     border-color: #3a3d42 !important;
 }
+
+[data-theme="dark"] .navbar {
+    background: #1a1d21 !important;
+}
+
+[data-theme="dark"] .btn-primary {
+    background-color: #055236;
+    border-color: #055236;
+}
+
+[data-theme="dark"] .btn-primary:hover {
+    background-color: #044228;
+    border-color: #044228;
+}
+
+[data-theme="dark"] .form-control {
+    background-color: #2d3035;
+    border-color: #3a3d42;
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] .form-control:focus {
+    background-color: #2d3035;
+    border-color: #4a4d52;
+    color: #e8e8e8;
+}
+
 [data-theme="dark"] .table {
     color: #e8e8e8;
 }
+
 [data-theme="dark"] .text-muted {
     color: #9ca3af !important;
 }
+
+/* The responsive media query stays separate */
+@media (max-width: 991.98px) {
+    .landlord-sidebar,
+    .caretaker-sidebar,
+    .tenant-sidebar {
+        display: none !important;
+    }
+
+    .mobile-header {
+        display: flex;
+    }
 }
