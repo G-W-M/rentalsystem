@@ -32,12 +32,12 @@ class MainSeeder extends Seeder
         // Enable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
-        $this->command->info('🌱 Starting database seeding...');
+
 
         // ============================================
         // SECTION 1: USERS (10 users total)
         // ============================================
-        $this->command->info('👥 Creating 10 users with @rental.com emails...');
+
         $userIds = $this->createUsers();
         $adminUser = $userIds['admin'];
         $landlordUsers = $userIds['landlords'];
@@ -47,25 +47,24 @@ class MainSeeder extends Seeder
         // ============================================
         // SECTION 2: ADMIN DETAILS
         // ============================================
-        $this->command->info('🏢 Creating admin details...');
+
         $this->createAdminDetails($adminUser);
 
         // ============================================
         // SECTION 3: LANDLORDS (2)
         // ============================================
-        $this->command->info('🏢 Creating 2 landlords...');
+
         $this->createLandlords($landlordUsers);
 
         // ============================================
         // SECTION 4: CARETAKERS (3)
         // ============================================
-        $this->command->info('🔧 Creating 3 caretakers...');
         $this->createCaretakers($landlordUsers, $caretakerUsers);
 
         // ============================================
         // SECTION 5: PROPERTIES & UNITS (3 properties, 1-3 units each)
         // ============================================
-        $this->command->info('🏠 Creating 3 properties with 1-3 units each...');
+
         $propertyData = $this->createPropertiesAndUnits($landlordUsers);
         $propertyIds = $propertyData['property_ids'];
         $unitIds = $propertyData['unit_ids'];
@@ -73,7 +72,7 @@ class MainSeeder extends Seeder
         // ============================================
         // SECTION 6: TENANTS (5) & OCCUPANCIES
         // ============================================
-        $this->command->info('👤 Creating 5 tenants and occupancies...');
+
         $this->createTenantsAndOccupancies(
             $landlordUsers,
             $tenantUsers,
@@ -84,13 +83,13 @@ class MainSeeder extends Seeder
         // ============================================
         // SECTION 7: PAYMENTS (6 months varying amounts)
         // ============================================
-        $this->command->info('💰 Creating 6 months of rent payments with varying amounts...');
+
         $this->createRentPayments($tenantUsers, $unitIds, $caretakerUsers);
 
         // ============================================
         // SECTION 8: MAINTENANCE REQUESTS (6 total)
         // ============================================
-        $this->command->info('🔧 Creating 6 maintenance requests...');
+
         $maintenanceIds = $this->createMaintenanceRequests(
             $tenantUsers,
             $unitIds,
@@ -102,19 +101,19 @@ class MainSeeder extends Seeder
         // ============================================
         // SECTION 9: TASKS
         // ============================================
-        $this->command->info('📋 Creating tasks for maintenance...');
+
         $this->createTasks($maintenanceIds, $caretakerUsers);
 
         // ============================================
         // SECTION 10: DAILY ACTIVITY LOGS (12 days)
         // ============================================
-        $this->command->info('📝 Creating 12 days of daily activity logs...');
+
         $this->createDailyActivityLogs($caretakerUsers, $propertyIds);
 
         // ============================================
         // SECTION 11: ACTIVITY LOGS (detailed)
         // ============================================
-        $this->command->info('📊 Creating detailed activity logs...');
+
         $this->createActivityLogs(
             $tenantUsers,
             $caretakerUsers,
@@ -127,34 +126,33 @@ class MainSeeder extends Seeder
         // ============================================
         // SECTION 12: SETTINGS
         // ============================================
-        $this->command->info('⚙️ Creating system settings...');
+
         $this->createSettings($adminUser);
 
         // ============================================
         // SECTION 13: NOTIFICATIONS (Multiple)
         // ============================================
-        $this->command->info('🔔 Creating multiple notifications...');
+
         $this->createNotifications($tenantUsers, $caretakerUsers, $landlordUsers);
 
         // ============================================
         // SECTION 14: SESSIONS
         // ============================================
-        $this->command->info('🖥️ Creating sessions...');
+
         $this->createSessions($tenantUsers, $caretakerUsers, $landlordUsers);
 
         // ============================================
         // SECTION 15: REPORTS
         // ============================================
-        $this->command->info('📄 Creating reports...');
+
         $this->createReports($adminUser, $landlordUsers);
 
         // ============================================
         // SECTION 16: AUDIT TRAILS (Multiple)
         // ============================================
-        $this->command->info('📋 Creating multiple audit trails...');
+
         $this->createAuditTrails($adminUser, $landlordUsers, $caretakerUsers, $maintenanceIds);
 
-        $this->command->info('✅ Database seeding completed successfully!');
         $this->displayCredentials();
     }
 
@@ -173,14 +171,11 @@ class MainSeeder extends Seeder
 
         foreach ($tables as $table) {
             DB::table($table)->truncate();
-            $this->command->info("   - Cleared: {$table}");
+
         }
     }
 
-    /**
-     * Create 10 users with @rental.com emails
-     * 1 Admin, 2 Landlords, 3 Caretakers, 5 Tenants
-     */
+
     private function createUsers(): array
     {
         $users = [];
@@ -1195,8 +1190,7 @@ class MainSeeder extends Seeder
      */
     private function displayCredentials(): void
     {
-        $this->command->info('============================================');
-        $this->command->info('🔐 Login Credentials (all @rental.com)');
+
         $this->command->info('============================================');
         $this->command->info('Admin:      admin@rental.com        / password');
         $this->command->info('Landlord 1: landlord1@rental.com    / password');
@@ -1209,15 +1203,6 @@ class MainSeeder extends Seeder
         $this->command->info('Tenant 3:   tenant3@rental.com      / password');
         $this->command->info('Tenant 4:   tenant4@rental.com      / password');
         $this->command->info('Tenant 5:   tenant5@rental.com      / password');
-        $this->command->info('============================================');
-        $this->command->info('📊 Data Summary:');
-        $this->command->info('   - 10 Users (1 Admin, 2 Landlords, 3 Caretakers, 5 Tenants)');
-        $this->command->info('   - 3 Properties with 1-3 Units each (6-9 total units)');
-        $this->command->info('   - 6 Months of Rent Payments (varying amounts)');
-        $this->command->info('   - 6 Maintenance Requests');
-        $this->command->info('   - 12 Days of Daily Activity Logs');
-        $this->command->info('   - 25+ Detailed Activity Logs');
-        $this->command->info('   - Multiple Notifications, Sessions, Reports & Audits');
-        $this->command->info('============================================');
+
     }
 }
