@@ -35,21 +35,49 @@
     function applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'light');
         localStorage.setItem('rental-theme-cache', theme);
+        
+        // Update button text if it exists
+        const toggle = document.getElementById('theme-toggle');
+        const label = document.getElementById('theme-label');
+        if (toggle && label) {
+            const icon = toggle.querySelector('i');
+            if (theme === 'dark') {
+                if (icon) icon.className = 'fas fa-sun';
+                label.textContent = 'Light Mode';
+            } else {
+                if (icon) icon.className = 'fas fa-moon';
+                label.textContent = 'Dark Mode';
+            }
+        }
     }
 
-    const cached = localStorage.getItem('rental-theme-cache');
-    if (cached) applyTheme(cached);
+    // DON'T apply cached theme immediately - wait for server or use localStorage only
+    // Remove this line to stop auto-applying from cache:
+    // if (cached) applyTheme(cached);
 
     async function loadThemeFromServer() {
         try {
             const data = await apiFetch('/api/settings/theme');
-            if (data && data.theme) applyTheme(data.theme);
+            if (data && data.theme) {
+                applyTheme(data.theme);
+            } else {
+                // If no server theme, check localStorage
+                const cached = localStorage.getItem('rental-theme-cache');
+                if (cached) {
+                    applyTheme(cached);
+                }
+            }
         } catch (e) {
-            // Not authenticated yet, or offline — cached/local theme still applies.
+            // If server fails, use localStorage
+            const cached = localStorage.getItem('rental-theme-cache');
+            if (cached) {
+                applyTheme(cached);
+            }
         }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        // Load theme from server ONCE when page loads
         loadThemeFromServer();
 
         const toggle = document.getElementById('theme-toggle');
@@ -58,14 +86,16 @@
                 const current = document.documentElement.getAttribute('data-theme') || 'light';
                 const next = current === 'dark' ? 'light' : 'dark';
                 applyTheme(next);
+                
+                // Try to save to server, but don't reload from server after
                 try {
                     await apiFetch('/api/admin/settings/theme', {
                         method: 'PUT',
                         body: JSON.stringify({ theme: next }),
                     });
                 } catch (e) {
-                    // If saving server-side fails (e.g. not admin), the
-                    // local/cached toggle still works for this browser.
+                    // If saving fails, local storage still works
+                    console.log('Theme saved locally only');
                 }
             });
         }
