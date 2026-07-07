@@ -38,6 +38,7 @@ class PropertySeeder extends Seeder
             ]
         );
 
+
         foreach (['A1' => 25000, 'A2' => 27000, 'B1' => 30000] as $number => $rent) {
             Unit::updateOrCreate(
                 ['property_id' => $property->id, 'unit_number' => $number],

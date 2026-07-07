@@ -35,6 +35,7 @@ class UserSeeder extends Seeder
             ]
         );
 
+
         $landlord = User::updateOrCreate(
             ['email' => 'landlord@example.com'],
             [

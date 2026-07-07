@@ -69,6 +69,7 @@ class FunSeeder extends Seeder
             'updated_at' => Carbon::now(),
         ]);
 
+
         $caretakerUser = DB::table('users')->insertGetId([
             'username' => 'demo_caretaker',
             'email' => 'caretaker@rental.com',

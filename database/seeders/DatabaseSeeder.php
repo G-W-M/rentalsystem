@@ -61,6 +61,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+
         $caretakerUser = User::firstOrCreate(
             ['email' => 'caretaker@rental.com'],
             [
