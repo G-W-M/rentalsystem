@@ -409,6 +409,7 @@ body {
 .landlord-sidebar,
 .caretaker-sidebar,
 .tenant-sidebar {
+    align-self: flex-start;
     width: 260px;
     flex-shrink: 0;
     background: #ffffff;
@@ -416,11 +417,21 @@ body {
     padding: 1.5rem 1rem;
     display: flex;
     flex-direction: column;
+    align-items: flex-start;   /* ADDED — stops children stretching to full width */
     height: 100vh;
     position: sticky;
     top: 0;
 }
 
+#theme-toggle {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
 .landlord-main,
 .caretaker-main,
 .tenant-main {

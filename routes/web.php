@@ -11,8 +11,8 @@ use App\Http\Controllers\PaymentController;
 |--------------------------------------------------------------------------
 */
 
+// In routes/web.php
 Route::view('/', 'welcome')->name('home');
-
 // ----- Auth pages -----
 Route::view('/login', 'auth.login')->name('login');
 Route::view('/register', 'auth.register')->name('register');
