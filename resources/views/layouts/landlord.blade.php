@@ -33,18 +33,23 @@
                     <div class="brand-title">Landlord Portal</div>
                 </div>
             </div>
-<div class="dropdown me-2" id="notif-bell">
-    <button class="btn btn-outline-secondary btn-sm rounded-circle position-relative" data-bs-toggle="dropdown">
-        <i class="fas fa-bell"></i>
-        <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;font-size:0.65rem;"></span>
-    </button>
-    <ul class="dropdown-menu dropdown-menu-end" id="notif-list" style="min-width:280px;max-height:350px;overflow-y:auto;">
-        <li class="dropdown-item text-muted small">Loading...</li>
-    </ul>
-</div>
-<button class="btn btn-outline-secondary btn-sm rounded-circle me-2" id="theme-toggle" title="Toggle dark mode">
-    <i class="fas fa-moon"></i>
-</button>
+            <div class="dropdown me-2" id="notif-bell">
+                <button class="btn btn-outline-secondary btn-sm rounded-circle position-relative"
+                    data-bs-toggle="dropdown">
+                    <i class="fas fa-bell"></i>
+                    <span id="notif-badge"
+                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                        style="display:none;font-size:0.65rem;"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" id="notif-list"
+                    style="min-width:280px;max-height:350px;overflow-y:auto;">
+                    <li class="dropdown-item text-muted small">Loading...</li>
+                </ul>
+            </div>
+            <button class="btn btn-outline-secondary btn-sm rounded-circle me-2" id="theme-toggle"
+                title="Toggle dark mode">
+                <i class="fas fa-moon"></i>
+            </button>
             <nav class="nav nav-pills flex-column gap-1">
                 <a class="nav-link {{ request()->routeIs('landlord.dashboard') ? 'active' : '' }}"
                     href="{{ route('landlord.dashboard') }}">
@@ -57,6 +62,10 @@
                 <a class="nav-link {{ request()->routeIs('landlord.units*') ? 'active' : '' }}"
                     href="{{ route('landlord.units.index') }}">
                     <i class="fas fa-door-open me-2"></i> Units
+                </a>
+                <a class="nav-link {{ request()->routeIs('landlord.caretakers*') ? 'active' : '' }}"
+                    href="{{ route('landlord.caretakers') }}">
+                    <i class="fas fa-user-tie me-2"></i> Caretakers
                 </a>
                 <a class="nav-link {{ request()->routeIs('landlord.activity-logs*') ? 'active' : '' }}"
                     href="{{ route('landlord.activity-logs') }}">
@@ -133,6 +142,8 @@
                         class="fas fa-building me-2"></i> Properties</a>
                 <a class="nav-link" href="{{ route('landlord.units.index') }}"><i class="fas fa-door-open me-2"></i>
                     Units</a>
+                <a class="nav-link" href="{{ route('landlord.caretakers') }}"><i class="fas fa-user-tie me-2"></i>
+                    Caretakers</a>
                 <a class="nav-link" href="{{ route('landlord.tenants.index') }}"><i class="fas fa-users me-2"></i>
                     Tenants</a>
                 <a class="nav-link" href="{{ route('landlord.payments.index') }}"><i

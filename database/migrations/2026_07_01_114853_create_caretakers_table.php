@@ -11,6 +11,17 @@ return new class extends Migration
         Schema::create('caretakers', function (Blueprint $table) {
             $table->foreignId('user_id')->primary()->constrained('users')->onDelete('cascade');
             $table->foreignId('landlord_id')->constrained('landlords', 'user_id')->onDelete('cascade');
+
+            // Add property_id with unique constraint
+            $table->foreignId('property_id')
+                  ->nullable()
+                  ->after('landlord_id')
+                  ->constrained('properties')
+                  ->nullOnDelete();
+
+            // This ensures one caretaker per property
+            $table->unique('property_id');
+
             $table->string('id_number', 50)->nullable();
             $table->string('emergency_contact', 100)->nullable();
             $table->string('emergency_phone', 20)->nullable();
