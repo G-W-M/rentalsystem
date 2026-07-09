@@ -88,7 +88,9 @@ Route::middleware(['auth:sanctum', 'role:caretaker', 'activity'])
         Route::get('/tasks', [TaskController::class, 'index']);
         Route::post('/tasks/{task}/start', [TaskController::class, 'start']);
         Route::post('/tasks/{task}/complete', [TaskController::class, 'complete']);
-
+        Route::get('/payments/pending', [PaymentController::class, 'pendingForCaretaker']);
+Route::post('/payments/{payment}/verify', [PaymentController::class, 'verify']);
+Route::get('/payments/verified', [PaymentController::class, 'caretakerVerifiedIndex']);
         Route::post('/payments/{payment}/verify', [PaymentController::class, 'verify']);
         Route::get('/payments/verified', [PaymentController::class, 'caretakerVerifiedIndex']);
 
@@ -103,7 +105,7 @@ Route::middleware(['auth:sanctum', 'role:tenant', 'activity', 'offline.sync'])
     ->prefix('tenant')
     ->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'tenant']);
-
+        Route::post('/payments/init-and-submit', [PaymentController::class, 'initAndSubmit']);
         Route::get('/pay-rent', [PaymentController::class, 'payRent']);
         Route::get('/payments', [PaymentController::class, 'tenantHistory']);
         Route::post('/payments/{payment}/submit', [PaymentController::class, 'submitPayment']);

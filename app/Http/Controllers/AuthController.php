@@ -123,6 +123,7 @@ class AuthController extends Controller
         $data = $request->validate([
             'full_name' => ['required', 'string', 'max:100'],
             'phone'     => ['nullable', 'string', 'max:20'],
+            'email'     => ['required', 'email', 'max:150', 'unique:users,email,' . $user->id],
         ]);
 
         $user->update($data);

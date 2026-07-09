@@ -83,6 +83,11 @@
                     href="{{ route('landlord.maintenance.index') }}">
                     <i class="fas fa-wrench me-2"></i> Maintenance
                 </a>
+                {{-- ✅ Settings link added here --}}
+                <a class="nav-link {{ request()->routeIs('landlord.settings*') ? 'active' : '' }}"
+                    href="{{ route('landlord.settings') }}">
+                    <i class="fas fa-gear me-2"></i> Settings
+                </a>
             </nav>
 
             <div class="sidebar-footer">
@@ -150,6 +155,10 @@
                         class="fas fa-credit-card me-2"></i> Payments</a>
                 <a class="nav-link" href="{{ route('landlord.maintenance.index') }}"><i
                         class="fas fa-wrench me-2"></i> Maintenance</a>
+                {{-- ✅ Settings link added here too --}}
+                <a class="nav-link" href="{{ route('landlord.settings') }}">
+                    <i class="fas fa-gear me-2"></i> Settings
+                </a>
             </nav>
         </div>
     </div>

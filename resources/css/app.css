@@ -635,4 +635,26 @@ body {
     .mobile-header {
         display: flex;
     }
+    
+}
+/* Landlord sidebar scroll fix */
+.landlord-sidebar {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.landlord-sidebar nav {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.landlord-sidebar .sidebar-footer {
+    flex-shrink: 0;
+}
+.landlord-sidebar {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-dark) transparent;
 }

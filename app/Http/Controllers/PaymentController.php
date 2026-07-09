@@ -250,16 +250,29 @@ class PaymentController extends Controller
     /**
      * GET /api/caretaker/payments/verified
      */
-    public function caretakerVerifiedIndex(Request $request): JsonResponse
+      public function caretakerVerifiedIndex(Request $request): JsonResponse
     {
-        $payments = Payment::where('verified_by', $request->user()->id)
+        $caretaker = \App\Models\Caretaker::where('user_id', $request->user()->id)->first();
+ 
+        if (! $caretaker || ! $caretaker->property_id) {
+            return response()->json(['message' => 'No property assigned to this caretaker.'], 403);
+        }
+ 
+        $unitIds = Unit::where('property_id', $caretaker->property_id)->pluck('id');
+ 
+        $payments = Payment::whereIn('unit_id', $unitIds)
+            ->where('verified_by', $request->user()->id)
             ->where('status', 'completed')
-            ->with('tenant.user:id,full_name', 'unit:id,unit_number')
+            ->with([
+                'tenant.user:id,full_name',
+                'unit:id,unit_number',
+            ])
             ->latest('verified_at')
             ->paginate(20);
-
+ 
         return response()->json($payments);
     }
+ 
 
     // ============================================================
     // NEW METHODS ADDED BELOW
@@ -271,74 +284,105 @@ class PaymentController extends Controller
      * Returns the payment the tenant should pay — current month if unpaid,
      * or generates next month's row if current month is already completed.
      */
-    public function payRent(Request $request): JsonResponse
+    public function pendingForCaretaker(Request $request): JsonResponse
+    {
+        $caretaker = \App\Models\Caretaker::where('user_id', $request->user()->id)->first();
+ 
+        if (! $caretaker || ! $caretaker->property_id) {
+            return response()->json(['message' => 'No property assigned to this caretaker.'], 403);
+        }
+ 
+        // Get all unit IDs for the caretaker's property.
+        $unitIds = Unit::where('property_id', $caretaker->property_id)->pluck('id');
+ 
+        $payments = Payment::whereIn('unit_id', $unitIds)
+            ->where('status', 'pending')
+            ->whereNotNull('transaction_id')   // tenant has submitted a code — awaiting verification
+            ->with([
+                'tenant.user:id,full_name,email,phone',
+                'unit:id,unit_number,property_id',
+            ])
+            ->latest('payment_date')
+            ->get();
+ 
+        return response()->json($payments);
+    }
+     public function payRent(Request $request): JsonResponse
     {
         $userId = $request->user()->id;
-
-        // Get active occupancy → unit (matches your tenants.user_id = users.id pattern)
-        $occupancy = TenantOccupancy::where('tenant_id', $userId)
+ 
+        $occupancy = \App\Models\TenantOccupancy::where('tenant_id', $userId)
             ->where('is_current', true)
-            ->with('unit')
             ->first();
-
-        if (! $occupancy || ! $occupancy->unit) {
+ 
+        if (! $occupancy) {
+            return response()->json(['message' => 'No active unit found.'], 422);
+        }
+ 
+        $unit       = Unit::find($occupancy->unit_id);
+        $rentAmount = $occupancy->rent_amount_at_start ?? $unit->rent_amount;
+        $now        = Carbon::now();
+ 
+        // Lease runs up to end_date, max 24 months ahead
+        $leaseEnd = $occupancy->end_date
+            ? Carbon::parse($occupancy->end_date)->startOfMonth()
+            : $now->copy()->addMonths(24)->startOfMonth();
+ 
+        // Build array of all months from current month to lease end
+        $allMonths = [];
+        $start = $now->copy()->startOfMonth();
+        $temp  = $start->copy();
+        $count = 0;
+ 
+        while ($temp->lessThanOrEqualTo($leaseEnd) && $count < 24) {
+            $allMonths[] = $temp->copy();
+            $temp->addMonthNoOverflow();
+            $count++;
+        }
+ 
+        // Get all payment rows for this tenant+unit in one query (no N+1)
+        $existingPayments = Payment::where('tenant_id', $userId)
+            ->where('unit_id', $occupancy->unit_id)
+            ->get()
+            ->keyBy(fn($p) => Carbon::parse($p->due_date)->format('Y-m'));
+ 
+        // Build payable months list — skip months that are already completed
+        $payableMonths = [];
+ 
+        foreach ($allMonths as $month) {
+            $key      = $month->format('Y-m');
+            $existing = $existingPayments->get($key);
+ 
+            // Skip if already fully paid
+            if ($existing && $existing->status === 'completed') {
+                continue;
+            }
+ 
+            $due = $month->copy()->addDays(4); // due on day 5
+ 
+            $payableMonths[] = [
+                'payment_id'     => $existing?->id,
+                'month_key'      => $key,
+                'label'          => $month->format('F Y'),
+                'amount'         => number_format((float)$rentAmount, 2, '.', ''),
+                'due_date'       => $due->toDateString(),
+                'status'         => $existing?->status ?? 'pending',
+                'transaction_id' => $existing?->transaction_id,
+            ];
+        }
+ 
+        if (empty($payableMonths)) {
             return response()->json([
-                'message' => 'You are not currently assigned to a unit. Please contact your landlord.',
+                'message' => 'Your rent is fully paid up to the end of your lease.',
             ], 422);
         }
-
-        $unit = $occupancy->unit;
-        $now  = Carbon::now();
-
-        // Find this month's payment row.
-        $current = Payment::where('tenant_id', $userId)
-            ->where('unit_id', $unit->id)
-            ->whereYear('due_date', $now->year)
-            ->whereMonth('due_date', $now->month)
-            ->first();
-
-        // Case 1: row exists and is not yet completed → pay it.
-        if ($current && $current->status !== 'completed') {
-            return response()->json([
-                'advance' => false,
-                'payment' => $this->paymentPayload($current, $unit),
-            ]);
-        }
-
-        // Case 2: no row yet this month → generate it now.
-        if (! $current) {
-            $current = $this->generatePaymentRow($userId, $unit, $now);
-            return response()->json([
-                'advance' => false,
-                'payment' => $this->paymentPayload($current, $unit),
-            ]);
-        }
-
-        // Case 3: current month completed → offer next month in advance.
-        $lastDue         = Payment::where('tenant_id', $userId)->where('unit_id', $unit->id)->max('due_date');
-        $nextMonthAnchor = Carbon::parse($lastDue)->addMonthNoOverflow();
-
-        // Guard: don't go past lease end.
-        if ($occupancy->end_date && $nextMonthAnchor->greaterThan(Carbon::parse($occupancy->end_date))) {
-            return response()->json([
-                'message' => 'Your rent is fully paid up to the end of your current lease.',
-            ], 422);
-        }
-
-        // Reuse existing next-month row if it already exists.
-        $next = Payment::where('tenant_id', $userId)
-            ->where('unit_id', $unit->id)
-            ->whereYear('due_date', $nextMonthAnchor->year)
-            ->whereMonth('due_date', $nextMonthAnchor->month)
-            ->first() ?? $this->generatePaymentRow($userId, $unit, $nextMonthAnchor);
-
+ 
         return response()->json([
-            'advance' => true,
-            'message' => "This month's rent is already paid. Would you like to pay next month in advance?",
-            'payment' => $this->paymentPayload($next, $unit),
+            'unit'           => $unit->unit_number,
+            'payable_months' => $payableMonths,
         ]);
     }
-
+ 
     /**
      * POST /api/tenant/payments/{payment}/submit
      * Tenant submits a transaction reference (Pay Rent flow + per-row Submit Code flow).
@@ -388,6 +432,97 @@ class PaymentController extends Controller
                 ? 'Advance payment submitted. It will reflect once verified.'
                 : 'Payment submitted. It will reflect once the caretaker verifies it.',
         ], 201);
+    }  public function initAndSubmit(Request $request): JsonResponse
+    {
+        $userId = $request->user()->id;
+ 
+        $data = $request->validate([
+            'due_date'       => ['required', 'date'],
+            'transaction_id' => ['required', 'string', 'max:100', 'unique:payments,transaction_id'],
+            'payment_method' => ['required', 'in:mpesa,bank,cash,cheque'],
+        ]);
+ 
+        $occupancy = \App\Models\TenantOccupancy::where('tenant_id', $userId)
+            ->where('is_current', true)
+            ->with('unit')
+            ->first();
+ 
+        if (! $occupancy || ! $occupancy->unit) {
+            return response()->json(['message' => 'No active unit found.'], 422);
+        }
+ 
+        $unit       = $occupancy->unit;
+        $dueCarbon  = Carbon::parse($data['due_date']);
+        $rentAmount = $occupancy->rent_amount_at_start ?? $unit->rent_amount;
+ 
+        // Hard rule: no duplicate completed payment for this month
+        $existing = Payment::where('tenant_id', $userId)
+            ->where('unit_id', $unit->id)
+            ->whereYear('due_date', $dueCarbon->year)
+            ->whereMonth('due_date', $dueCarbon->month)
+            ->where('status', 'completed')
+            ->first();
+ 
+        if ($existing) {
+            return response()->json([
+                'message' => 'Rent for ' . $dueCarbon->format('F Y') . ' is already paid.',
+            ], 422);
+        }
+ 
+        $isAdvance = $dueCarbon->isFuture();
+ 
+        $payment = Payment::firstOrCreate(
+            [
+                'tenant_id' => $userId,
+                'unit_id'   => $unit->id,
+                'due_date'  => $data['due_date'],
+            ],
+            [
+                'amount'         => $rentAmount,
+                'status'         => 'pending',
+                'payment_date'   => null,
+                'payment_method' => null,
+                'transaction_id' => null,
+                'receipt_url'    => null,
+                'verified_by'    => null,
+                'verified_at'    => null,
+                'notes'          => null,
+            ]
+        );
+ 
+        $payment->update([
+            'transaction_id' => $data['transaction_id'],
+            'payment_method' => $data['payment_method'],
+            'payment_date'   => now()->toDateString(),
+            'status'         => 'pending',
+            'notes'          => ($isAdvance ? 'Advance payment. ' : '')
+                              . 'Submitted by tenant, awaiting verification.',
+        ]);
+ 
+        // Notify landlord
+        $landlordId = optional($unit->property)->landlord_id;
+        if ($landlordId) {
+            Notifications::create([
+                'user_id' => $landlordId,
+                'title'   => 'Payment Awaiting Verification',
+                'message' => 'A tenant submitted a ' . ($isAdvance ? 'advance ' : '')
+                           . 'rent payment reference for ' . $dueCarbon->format('F Y') . '.',
+                'type'    => 'payment',
+                'link'    => '/landlord/payments',
+            ]);
+        }
+ 
+        return response()->json([
+            'ok'      => true,
+            'advance' => $isAdvance,
+            'message' => ($isAdvance ? 'Advance payment' : 'Payment') . ' submitted. It will reflect once verified.',
+        ], 201);
+    }
+ 
+    // ── helper: due date = day 5 of the month ──
+    private function dueDate(Carbon $anchor): Carbon
+    {
+        return $anchor->copy()->startOfMonth()->addDays(4);
     }
 
     /**

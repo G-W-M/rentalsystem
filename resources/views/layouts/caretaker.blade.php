@@ -33,18 +33,21 @@
                     <div class="brand-title">Caretaker Portal</div>
                 </div>
             </div>
-<div class="dropdown me-2" id="notif-bell">
-    <button class="btn btn-outline-secondary btn-sm rounded-circle position-relative" data-bs-toggle="dropdown">
-        <i class="fas fa-bell"></i>
-        <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;font-size:0.65rem;"></span>
-    </button>
-    <ul class="dropdown-menu dropdown-menu-end" id="notif-list" style="min-width:280px;max-height:350px;overflow-y:auto;">
-        <li class="dropdown-item text-muted small">Loading...</li>
-    </ul>
-</div>
-<button class="btn btn-outline-secondary btn-sm rounded-circle me-2" id="theme-toggle" title="Toggle dark mode">
-    <i class="fas fa-moon"></i>
-</button>
+
+            <div class="dropdown me-2" id="notif-bell">
+                <button class="btn btn-outline-secondary btn-sm rounded-circle position-relative" data-bs-toggle="dropdown">
+                    <i class="fas fa-bell"></i>
+                    <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;font-size:0.65rem;"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" id="notif-list" style="min-width:280px;max-height:350px;overflow-y:auto;">
+                    <li class="dropdown-item text-muted small">Loading...</li>
+                </ul>
+            </div>
+
+            <button class="btn btn-outline-secondary btn-sm rounded-circle me-2" id="theme-toggle" title="Toggle dark mode">
+                <i class="fas fa-moon"></i>
+            </button>
+
             <nav class="nav nav-pills flex-column gap-1">
                 <a class="nav-link {{ request()->routeIs('caretaker.dashboard') ? 'active' : '' }}"
                     href="{{ route('caretaker.dashboard') }}">
@@ -61,6 +64,15 @@
                 <a class="nav-link {{ request()->routeIs('caretaker.payments*') ? 'active' : '' }}"
                     href="{{ route('caretaker.payments.index') }}">
                     <i class="fas fa-receipt me-2"></i> Verify Payments
+                </a>
+                <a class="nav-link {{ request()->routeIs('caretaker.activity-logs') ? 'active' : '' }}"
+                    href="{{ route('caretaker.activity-logs') }}">
+                    <i class="fas fa-clipboard-list me-2"></i> Activity Logs
+                </a>
+                {{-- ✅ Settings link added here --}}
+                <a class="nav-link {{ request()->routeIs('caretaker.settings') ? 'active' : '' }}"
+                    href="{{ route('caretaker.settings') }}">
+                    <i class="fas fa-gear me-2"></i> Settings
                 </a>
             </nav>
 
@@ -88,9 +100,7 @@
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="{{ route('caretaker.settings') }}">Settings</a></li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
+                        <li><hr class="dropdown-divider"></li>
                         <li>
                             <button type="submit" form="logout-form" class="dropdown-item text-danger">Logout</button>
                         </li>
@@ -102,6 +112,7 @@
         </main>
     </div>
 
+    {{-- Mobile offcanvas sidebar --}}
     <div class="offcanvas offcanvas-start caretaker-offcanvas" tabindex="-1" id="sidebarOffcanvas">
         <div class="offcanvas-header">
             <div class="d-flex align-items-center gap-3">
@@ -115,17 +126,31 @@
         </div>
         <div class="offcanvas-body">
             <nav class="nav nav-pills flex-column gap-1">
-                <a class="nav-link" href="{{ route('caretaker.dashboard') }}"><i class="fas fa-th-large me-2"></i>
-                    Dashboard</a>
-                <a class="nav-link" href="{{ route('caretaker.tasks.index') }}"><i class="fas fa-list-check me-2"></i>
-                    Tasks</a>
-                <a class="nav-link" href="{{ route('caretaker.activity-logs') }}"><i
-                        class="fas fa-clipboard-list me-2"></i>
-                    Activity Logs</a>
-                <a class="nav-link" href="{{ route('caretaker.maintenance.index') }}"><i
-                        class="fas fa-wrench me-2"></i> Maintenance</a>
-                <a class="nav-link" href="{{ route('caretaker.payments.index') }}"><i class="fas fa-receipt me-2"></i>
-                    Verify Payments</a>
+                <a class="nav-link {{ request()->routeIs('caretaker.dashboard') ? 'active' : '' }}"
+                    href="{{ route('caretaker.dashboard') }}">
+                    <i class="fas fa-th-large me-2"></i> Dashboard
+                </a>
+                <a class="nav-link {{ request()->routeIs('caretaker.tasks*') ? 'active' : '' }}"
+                    href="{{ route('caretaker.tasks.index') }}">
+                    <i class="fas fa-list-check me-2"></i> Tasks
+                </a>
+                <a class="nav-link {{ request()->routeIs('caretaker.maintenance*') ? 'active' : '' }}"
+                    href="{{ route('caretaker.maintenance.index') }}">
+                    <i class="fas fa-wrench me-2"></i> Maintenance
+                </a>
+                <a class="nav-link {{ request()->routeIs('caretaker.payments*') ? 'active' : '' }}"
+                    href="{{ route('caretaker.payments.index') }}">
+                    <i class="fas fa-receipt me-2"></i> Verify Payments
+                </a>
+                <a class="nav-link {{ request()->routeIs('caretaker.activity-logs') ? 'active' : '' }}"
+                    href="{{ route('caretaker.activity-logs') }}">
+                    <i class="fas fa-clipboard-list me-2"></i> Activity Logs
+                </a>
+                {{-- ✅ Settings link added here too --}}
+                <a class="nav-link {{ request()->routeIs('caretaker.settings') ? 'active' : '' }}"
+                    href="{{ route('caretaker.settings') }}">
+                    <i class="fas fa-gear me-2"></i> Settings
+                </a>
             </nav>
         </div>
     </div>
