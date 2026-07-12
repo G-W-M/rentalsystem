@@ -15,31 +15,37 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    @vite(['resources/css/app.css'])
+    @vite(['resources/css/auth.css'])
     @stack('styles')
 </head>
 
 <body>
     <div class="auth-wrapper d-flex align-items-center justify-content-center min-vh-100"
-        style="background: linear-gradient(135deg, #13293d 0%, #1f3b57 100%);">
-        <div class="container">
+        style="background: url('{{ asset('images/rentalbg.jpg') }}') center/cover no-repeat; position: relative;">
+
+        <div class="container" style="position: relative; z-index: 1;">
             <div class="row justify-content-center">
                 <div class="col-md-6 col-lg-5 col-xl-4">
-                    <div class="card shadow-lg border-0">
+                    <div class="card shadow-lg border-0"
+                        style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 20px;">
                         <div class="card-body p-4 p-md-5">
                             {{-- Brand Header --}}
                             <div class="text-center mb-4">
                                 <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
+                                    <!-- Brand Chip with Logo Image -->
                                     <div class="brand-chip"
-                                        style="width: 50px; height: 50px; background: #13293d; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px;">
-                                        RS
+                                        style="width: 60px; height: 60px; border-radius: 50%; overflow: hidden; border: 3px solid #9BE866; box-shadow: 0 0 0 4px rgba(159, 232, 102, 0.2); display: flex; align-items: center; justify-content: center; background: #FEFDD6; flex-shrink: 0;">
+                                        <img src="{{ asset('images/logo.jpg') }}" alt="Logo"
+                                            style="width: 100%; height: 100%; object-fit: cover;">
                                     </div>
                                     <div>
-                                        <div class="small text-uppercase fw-semibold text-muted">Rental System</div>
-                                        <div class="h5 mb-0">@yield('auth-title', 'Welcome')</div>
+                                        <div class="small text-uppercase fw-semibold" style="color: #504E76;">Rental
+                                            System</div>
+                                        <div class="h5 mb-0" style="color: #504E76; font-weight: 700;">@yield('auth-title', 'Welcome')
+                                        </div>
                                     </div>
                                 </div>
-                                <p class="text-muted small">@yield('auth-subtitle', 'Sign in to your account')</p>
+                                <p class="text-muted small" style="color: #504E76 !important;">@yield('auth-subtitle', 'Sign in to your account')</p>
                             </div>
 
                             {{-- Auth Content --}}
@@ -49,8 +55,8 @@
 
                     {{-- Footer --}}
                     <div class="text-center mt-3">
-                        <p class="text-white-50 small mb-0">&copy; {{ date('Y') }} Rental System. All rights
-                            reserved.</p>
+                        <p class="small mb-0" style="color: rgba(255, 255, 255, 0.8);">&copy; {{ date('Y') }} Rental
+                            System. All rights reserved.</p>
                     </div>
                 </div>
             </div>

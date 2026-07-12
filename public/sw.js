@@ -1,6 +1,6 @@
 /* Rental System service worker */
-const CACHE = 'rental-shell-v2';
-const SHELL = ['/', '/offline.html'];
+const CACHE = 'rental-shell-v3';
+const SHELL = ['/offline.html'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
@@ -24,6 +24,17 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
+
+  // Navigation requests (HTML pages) — always go to the network first so
+  // Laravel's real, current response is served. Only fall back to the
+  // offline shell if the network is unreachable. This prevents a stale
+  // cached page from silently masking new deployments.
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request).catch(() => caches.match('/offline.html'))
+    );
+    return;
+  }
 
   if (request.url.includes('/api/') && request.method === 'GET') {
     event.respondWith(
@@ -51,6 +62,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Everything else (CSS/JS/images/fonts): cache-first, fall back to network.
   event.respondWith(
     caches.match(request).then((cached) => cached || fetch(request).catch(() => caches.match('/offline.html')))
   );

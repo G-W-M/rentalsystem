@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Auth\LoginRequest;
+use App\Mail\PasswordResetMail;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 
@@ -16,6 +18,11 @@ class AuthController extends Controller
 {
     /**
      * POST /api/login
+     *
+     * PWA-only auth. Single mechanism: Sanctum stateful session via
+     * Auth::attempt() + session regenerate. Requires ->statefulApi() in
+     * bootstrap/app.php and the browsed host listed in
+     * SANCTUM_STATEFUL_DOMAINS.
      */
     public function login(LoginRequest $request): JsonResponse
     {
@@ -33,17 +40,13 @@ class AuthController extends Controller
             ], 403);
         }
 
-        Auth::guard('web')->login($user, true);
+        Auth::login($user, true);
         $request->session()->regenerate();
-
-        $device = $request->input('device_type', 'pwa');
-        $token  = $user->createToken($device)->plainTextToken;
 
         $user->forceFill(['last_login' => now()])->save();
 
         return response()->json([
-            'token' => $token,
-            'user'  => $this->userPayload($user),
+            'user' => $this->userPayload($user),
         ]);
     }
 
@@ -82,33 +85,35 @@ class AuthController extends Controller
             return $user;
         });
 
-        Auth::guard('web')->login($user, true);
+        Auth::login($user, true);
         $request->session()->regenerate();
-
-        $token = $user->createToken('pwa')->plainTextToken;
 
         return response()->json([
             'message' => 'Account created.',
-            'token'   => $token,
             'user'    => $this->userPayload($user),
         ], 201);
     }
 
     /**
-     * POST /api/logout
+     * POST /logout
+     *
+     * Triggered by a plain Blade <form method="POST"> in the sidebar/navbar
+     * (not a JS fetch call), so this redirects rather than returning JSON —
+     * returning JSON here previously rendered the raw
+     * {"message":"Logged out."} text as a blank page after a full-page
+     * form submission.
      */
-    public function logout(Request $request): JsonResponse
+    public function logout(Request $request)
     {
-        $token = $request->user()?->currentAccessToken();
-        if ($token !== null) {
-            $token->delete();
-        }
-
         Auth::guard('web')->logout();
         $request->session()?->invalidate();
         $request->session()?->regenerateToken();
 
-        return response()->json(['message' => 'Logged out.']);
+        if ($request->wantsJson() && ! $request->hasSession()) {
+            return response()->json(['message' => 'Logged out.']);
+        }
+
+        return redirect()->route('login');
     }
 
     public function me(Request $request): JsonResponse
@@ -154,12 +159,10 @@ class AuthController extends Controller
 
     /**
      * POST /api/forgot-password
-     * No mail service is configured in this environment. Instead of sending
-     * an email, this generates a real Laravel password-reset token and
-     * returns the reset URL directly in the JSON response, so the frontend
-     * can display it on-screen. This is a pragmatic dev-environment
-     * substitute — swap for Password::sendResetLink alone once a real mail
-     * driver is configured, and stop returning the URL.
+     * Generates a real Laravel password-reset token and emails the reset
+     * URL via PasswordResetMail, instead of returning it in the JSON
+     * response. Same response is returned whether or not the email
+     * exists, to avoid leaking which addresses have accounts.
      */
     public function forgotPassword(Request $request): JsonResponse
     {
@@ -169,17 +172,28 @@ class AuthController extends Controller
 
         if ($user === null) {
             return response()->json([
-                'message'   => 'If that email exists, a reset link has been generated.',
-                'reset_url' => null,
+                'message' => 'If that email exists, a reset link has been sent.',
             ]);
         }
 
-        $token = Password::broker()->createToken($user);
+        $token = Password::createToken($user);
         $resetUrl = url('/reset-password?token=' . $token . '&email=' . urlencode($user->email));
 
+        try {
+            Mail::to($user->email)->send(new PasswordResetMail(
+                fullName: $user->full_name,
+                resetUrl: $resetUrl,
+            ));
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'message' => 'We could not send the reset email right now. Please try again shortly or contact support.',
+            ], 500);
+        }
+
         return response()->json([
-            'message'   => 'Reset link generated. Since no mail service is configured, use the link below directly.',
-            'reset_url' => $resetUrl,
+            'message' => 'If that email exists, a reset link has been sent.',
         ]);
     }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Landlord\AllocateTenantRequest;
+use App\Mail\NewUserCredentialsMail;
 use App\Models\Payment;
 use App\Models\Tenant;
 use App\Models\TenantOccupancy;
@@ -13,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -32,10 +34,11 @@ class TenantController extends Controller
 
     /**
      * POST /api/landlord/tenants
-     * Password is now auto-generated (not landlord-typed) and returned in
-     * the response, matching the caretaker creation pattern — no real
-     * email service configured, so this is the on-screen dev-mode
-     * equivalent of "auto email credentials."
+     * Password is auto-generated and emailed to the tenant via
+     * NewUserCredentialsMail. If mail delivery fails (e.g. SMTP
+     * unreachable), the tenant account is still created and the
+     * password is returned in the JSON response as a fallback so the
+     * landlord isn't stuck.
      */
     public function store(Request $request): JsonResponse
     {
@@ -78,11 +81,29 @@ class TenantController extends Controller
             ]);
         });
 
-        return response()->json([
-            'tenant'   => $tenant->load('user:id,full_name,email'),
-            'password' => $generatedPassword,
-            'message'  => 'Tenant created. Share these credentials with them directly (no email service configured).',
-        ], 201);
+        try {
+            Mail::to($data['email'])->send(new NewUserCredentialsMail(
+                fullName: $data['full_name'],
+                email: $data['email'],
+                username: $data['username'],
+                password: $generatedPassword,
+                role: 'tenant',
+                loginUrl: url('/login'),
+            ));
+
+            return response()->json([
+                'tenant'  => $tenant->load('user:id,full_name,email'),
+                'message' => 'Tenant created. Login credentials have been emailed to '.$data['email'].'.',
+            ], 201);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'tenant'   => $tenant->load('user:id,full_name,email'),
+                'password' => $generatedPassword,
+                'message'  => 'Tenant created, but the credentials email failed to send. Share this password with them directly.',
+            ], 201);
+        }
     }
 
     /**

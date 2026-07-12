@@ -40,16 +40,21 @@
             </div>
 
             <div class="dropdown me-2" id="notif-bell">
-                <button class="btn btn-outline-secondary btn-sm rounded-circle position-relative" data-bs-toggle="dropdown">
+                <button class="btn btn-outline-secondary btn-sm rounded-circle position-relative"
+                    data-bs-toggle="dropdown">
                     <i class="fas fa-bell"></i>
-                    <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;font-size:0.65rem;"></span>
+                    <span id="notif-badge"
+                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                        style="display:none;font-size:0.65rem;"></span>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end" id="notif-list" style="min-width:280px;max-height:350px;overflow-y:auto;">
+                <ul class="dropdown-menu dropdown-menu-end" id="notif-list"
+                    style="min-width:280px;max-height:350px;overflow-y:auto;">
                     <li class="dropdown-item text-muted small">Loading...</li>
                 </ul>
             </div>
 
-            <button class="btn btn-outline-secondary btn-sm rounded-circle me-2" id="theme-toggle" title="Toggle dark mode">
+            <button class="btn btn-outline-secondary btn-sm rounded-circle me-2" id="theme-toggle"
+                title="Toggle dark mode">
                 <i class="fas fa-moon"></i>
             </button>
 
@@ -84,8 +89,7 @@
                 <div class="mt-2">
                     <span class="badge bg-success">Active</span>
                 </div>
-                <button type="submit" form="logout-form"
-                    class="btn btn-outline-secondary btn-sm w-100 mt-2">
+                <button type="submit" form="logout-form" class="btn btn-outline-secondary btn-sm w-100 mt-2">
                     <i class="fas fa-sign-out-alt me-2"></i> Logout
                 </button>
             </div>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\NewUserCredentialsMail;
 use App\Models\Caretaker;
 use App\Models\Property;
 use App\Models\User;
@@ -9,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -33,10 +35,9 @@ class LandlordController extends Controller
      * index on caretakers.property_id; a 422 with a clear message is
      * returned if the chosen property already has a caretaker).
      *
-     * Password is auto-generated (not landlord-typed) and returned in the
-     * response so the landlord can relay it — no real email service is
-     * configured, so this is the on-screen dev-mode equivalent of "auto
-     * email credentials."
+     * Password is auto-generated and emailed via NewUserCredentialsMail.
+     * If mail delivery fails, the caretaker account is still created and
+     * the password is returned in the JSON response as a fallback.
      */
     public function storeCaretaker(Request $request): JsonResponse
     {
@@ -88,11 +89,29 @@ class LandlordController extends Controller
             ]);
         });
 
-        return response()->json([
-            'caretaker' => $caretaker->load('user:id,full_name,email', 'property:id,name'),
-            'password'  => $generatedPassword,
-            'message'   => 'Caretaker created. Share these credentials with them directly (no email service configured).',
-        ], 201);
+        try {
+            Mail::to($data['email'])->send(new NewUserCredentialsMail(
+                fullName: $data['full_name'],
+                email: $data['email'],
+                username: $data['username'],
+                password: $generatedPassword,
+                role: 'caretaker',
+                loginUrl: url('/login'),
+            ));
+
+            return response()->json([
+                'caretaker' => $caretaker->load('user:id,full_name,email', 'property:id,name'),
+                'message'   => 'Caretaker created. Login credentials have been emailed to '.$data['email'].'.',
+            ], 201);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'caretaker' => $caretaker->load('user:id,full_name,email', 'property:id,name'),
+                'password'  => $generatedPassword,
+                'message'   => 'Caretaker created, but the credentials email failed to send. Share this password with them directly.',
+            ], 201);
+        }
     }
 
     /**

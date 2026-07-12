@@ -34,22 +34,29 @@
                 </div>
             </div>
             <div class="dropdown me-2" id="notif-bell">
-                <button class="btn btn-outline-secondary btn-sm rounded-circle position-relative" data-bs-toggle="dropdown">
+                <button class="btn btn-outline-secondary btn-sm rounded-circle position-relative"
+                    data-bs-toggle="dropdown">
                     <i class="fas fa-bell"></i>
-                    <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;font-size:0.65rem;"></span>
+                    <span id="notif-badge"
+                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                        style="display:none;font-size:0.65rem;"></span>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end" id="notif-list" style="min-width:280px;max-height:350px;overflow-y:auto;">
+                <ul class="dropdown-menu dropdown-menu-end" id="notif-list"
+                    style="min-width:280px;max-height:350px;overflow-y:auto;">
                     <li class="dropdown-item text-muted small">Loading...</li>
                 </ul>
             </div>
-            <button class="btn btn-outline-secondary btn-sm rounded-circle me-2" id="theme-toggle" title="Toggle dark mode">
+            <button class="btn btn-outline-secondary btn-sm rounded-circle me-2" id="theme-toggle"
+                title="Toggle dark mode">
                 <i class="fas fa-moon"></i>
             </button>
             <nav class="nav nav-pills flex-column gap-1">
-                <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
+                <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
+                    href="{{ route('admin.dashboard') }}">
                     <i class="fas fa-th-large me-2"></i> Dashboard
                 </a>
-                <a class="nav-link {{ request()->routeIs('admin.users') ? 'active' : '' }}" href="{{ route('admin.users') }}">
+                <a class="nav-link {{ request()->routeIs('admin.users') ? 'active' : '' }}"
+                    href="{{ route('admin.users') }}">
                     <i class="fas fa-users-cog me-2"></i> Users
                 </a>
                 {{-- ✅ Settings link added here --}}
@@ -73,16 +80,21 @@
 
         <main class="landlord-main">
             <div class="mobile-header">
-                <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
+                <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas"
+                    data-bs-target="#sidebarOffcanvas">
                     <i class="fas fa-bars"></i>
                 </button>
                 <div class="portal-title">Admin Portal</div>
                 <div class="dropdown">
-                    <button class="btn btn-outline-secondary btn-sm rounded-circle" data-bs-toggle="dropdown"><i class="fas fa-user"></i></button>
+                    <button class="btn btn-outline-secondary btn-sm rounded-circle" data-bs-toggle="dropdown"><i
+                            class="fas fa-user"></i></button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="{{ route('admin.settings') }}">Settings</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><button type="submit" form="logout-form" class="dropdown-item text-danger">Logout</button></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><button type="submit" form="logout-form" class="dropdown-item text-danger">Logout</button>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -104,7 +116,8 @@
         </div>
         <div class="offcanvas-body">
             <nav class="nav nav-pills flex-column gap-1">
-                <a class="nav-link" href="{{ route('admin.dashboard') }}"><i class="fas fa-th-large me-2"></i> Dashboard</a>
+                <a class="nav-link" href="{{ route('admin.dashboard') }}"><i class="fas fa-th-large me-2"></i>
+                    Dashboard</a>
                 <a class="nav-link" href="{{ route('admin.users') }}"><i class="fas fa-users-cog me-2"></i> Users</a>
                 {{-- ✅ Settings link added here too --}}
                 <a class="nav-link" href="{{ route('admin.settings') }}">
