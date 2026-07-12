@@ -184,13 +184,49 @@ class DashboardController extends Controller
                 'since'       => $occupancy->start_date,
             ] : null,
             'caretaker'        => $caretakerInfo,
-            'pending_payment'  => Payment::where('tenant_id', $id)
-                                    ->where('status', 'pending')->latest('due_date')->first(),
+            'pending_payment'  => $this->nextPaymentFor($id),
             'open_maintenance' => MaintenanceRequest::where('tenant_id', $id)
                                     ->whereNotIn('status', ['resolved', 'rejected'])->count(),
             'recent_payments'  => Payment::where('tenant_id', $id)
                                     ->latest('due_date')->take(5)->get(),
         ]);
+    }
+
+    /**
+     * Resolves what the tenant's "Next Payment" card should show.
+     *
+     * Priority order:
+     *   1. The EARLIEST payment still at 'pending' — i.e. genuinely unpaid,
+     *      nothing submitted yet. oldest() (not latest()) matters here:
+     *      "next payment" means the soonest one owed, not the furthest-future
+     *      one. With latest(), a future advance payment would shadow an
+     *      overdue current month.
+     *
+     *   2. If nothing is pending, fall back to the earliest payment at
+     *      'awaiting_verification'. Without this the card would claim "you
+     *      are all caught up" while the tenant's money is actually in flight
+     *      awaiting caretaker confirmation — technically true (nothing left
+     *      to pay) but misleading, and inconsistent with the Payments page
+     *      which clearly shows those submissions.
+     *
+     *   3. Genuinely nothing outstanding -> null -> the card shows the
+     *      "all caught up" empty state.
+     */
+    private function nextPaymentFor(int $tenantId): ?Payment
+    {
+        $pending = Payment::where('tenant_id', $tenantId)
+            ->where('status', 'pending')
+            ->oldest('due_date')
+            ->first();
+
+        if ($pending !== null) {
+            return $pending;
+        }
+
+        return Payment::where('tenant_id', $tenantId)
+            ->where('status', 'awaiting_verification')
+            ->oldest('due_date')
+            ->first();
     }
 
     private function revenueLast6Months($unitIds): array

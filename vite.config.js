@@ -20,6 +20,15 @@ export default defineConfig({
         host: '0.0.0.0',
         port: 5173,
         strictPort: true,
+        cors: true,
+        // Allows the Vite dev server's HMR websocket + asset requests to be
+        // accepted when the page itself is loaded from rental.test (Laragon)
+        // instead of only localhost/127.0.0.1. Without this, @vite() assets
+        // requested from the rental.test origin can be blocked as cross-origin
+        // even though the dev server is running locally.
+        hmr: {
+            host: 'rentalsystem.test',
+        },
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },

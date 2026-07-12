@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\SerializesDatesReadably;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class MaintenanceRequest extends Model
 {
+    use SerializesDatesReadably;
+
     public const CATEGORY_PLUMBING = 'plumbing';
     public const CATEGORY_ELECTRICAL = 'electrical';
     public const CATEGORY_STRUCTURAL = 'structural';
@@ -26,8 +29,8 @@ class MaintenanceRequest extends Model
     public const STATUS_IN_PROGRESS = 'in_progress';
     public const STATUS_RESOLVED = 'resolved';
     public const STATUS_REJECTED = 'rejected';
+
     protected $fillable = [
-        
         'tenant_id',
         'unit_id',
         'property_id',

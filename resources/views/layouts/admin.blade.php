@@ -59,7 +59,15 @@
                     href="{{ route('admin.users') }}">
                     <i class="fas fa-users-cog me-2"></i> Users
                 </a>
-                {{-- ✅ Settings link added here --}}
+                {{-- Reports & Exports --}}
+                <a class="nav-link {{ request()->routeIs('admin.reports') ? 'active' : '' }}"
+                    href="{{ route('admin.reports') }}">
+                    <i class="fas fa-file-arrow-down me-2"></i> Reports
+                </a>
+                <a class="nav-link {{ request()->routeIs('admin.activity-logs') ? 'active' : '' }}"
+                    href="{{ route('admin.activity-logs') }}">
+                    <i class="fas fa-clipboard-list me-2"></i> Activity Logs
+                </a>
                 <a class="nav-link {{ request()->routeIs('admin.settings') ? 'active' : '' }}"
                     href="{{ route('admin.settings') }}">
                     <i class="fas fa-gear me-2"></i> Settings
@@ -89,6 +97,7 @@
                     <button class="btn btn-outline-secondary btn-sm rounded-circle" data-bs-toggle="dropdown"><i
                             class="fas fa-user"></i></button>
                     <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ route('admin.reports') }}">Reports</a></li>
                         <li><a class="dropdown-item" href="{{ route('admin.settings') }}">Settings</a></li>
                         <li>
                             <hr class="dropdown-divider">
@@ -119,7 +128,13 @@
                 <a class="nav-link" href="{{ route('admin.dashboard') }}"><i class="fas fa-th-large me-2"></i>
                     Dashboard</a>
                 <a class="nav-link" href="{{ route('admin.users') }}"><i class="fas fa-users-cog me-2"></i> Users</a>
-                {{-- ✅ Settings link added here too --}}
+                {{-- Reports & Exports --}}
+                <a class="nav-link" href="{{ route('admin.reports') }}">
+                    <i class="fas fa-file-arrow-down me-2"></i> Reports
+                </a>
+                <a class="nav-link" href="{{ route('admin.activity-logs') }}">
+                    <i class="fas fa-clipboard-list me-2"></i> Activity Logs
+                </a>
                 <a class="nav-link" href="{{ route('admin.settings') }}">
                     <i class="fas fa-gear me-2"></i> Settings
                 </a>
