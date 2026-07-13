@@ -49,6 +49,16 @@
             });
         }
 
+<<<<<<< HEAD
+=======
+        /**
+         * Maps a raw payment status to a readable label + the right badge
+         * colour. Previously the badge was hardcoded to bg-warning and printed
+         * the raw enum, so an already-submitted payment still looked like an
+         * unpaid one — the exact inconsistency between this card and the
+         * Payments page.
+         */
+>>>>>>> 076421e84a66168988790ae31e4f00e41822a69e
         function statusBadge(status) {
             const map = {
                 pending: {
@@ -68,10 +78,18 @@
                     css: 'bg-danger'
                 },
             };
+<<<<<<< HEAD
+=======
+
+>>>>>>> 076421e84a66168988790ae31e4f00e41822a69e
             const s = map[status] || {
                 label: status,
                 css: 'bg-secondary'
             };
+<<<<<<< HEAD
+=======
+
+>>>>>>> 076421e84a66168988790ae31e4f00e41822a69e
             return '<span class="badge ' + s.css + '">' + s.label + '</span>';
         }
 
@@ -100,14 +118,30 @@
                 const pay = document.getElementById('payment-block');
                 if (data.pending_payment) {
                     const p = data.pending_payment;
+<<<<<<< HEAD
+=======
+
+                    // When the payment is already submitted, the card is no longer a
+                    // "you owe this" prompt — say so explicitly rather than showing a
+                    // due date that implies action is still needed.
+>>>>>>> 076421e84a66168988790ae31e4f00e41822a69e
                     const isSubmitted = p.status === 'awaiting_verification';
                     const note = isSubmitted ?
                         '<div class="text-gray-600 small mt-1">Submitted — awaiting caretaker verification.</div>' :
                         '';
+<<<<<<< HEAD
                     pay.innerHTML =
                         '<div class="h4 text-primary">' + money(p.amount) + '</div>' +
                         '<div class="text-gray-600">Due: ' + (p.due_date || '-') + '</div>' +
                         statusBadge(p.status) + note;
+=======
+
+                    pay.innerHTML =
+                        '<div class="h4 text-primary">' + money(p.amount) + '</div>' +
+                        '<div class="text-gray-600">Due: ' + (p.due_date || '-') + '</div>' +
+                        statusBadge(p.status) +
+                        note;
+>>>>>>> 076421e84a66168988790ae31e4f00e41822a69e
                 } else {
                     pay.innerHTML = '<div class="text-muted">No pending payment. You are all caught up. ✓</div>';
                 }

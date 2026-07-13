@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::view('/admin/reports', 'admin.reports')->name('admin.reports');
     Route::view('/admin/settings', 'admin.settings')->name('admin.settings');
     Route::view('/admin/activity-logs', 'admin.activity-logs')->name('admin.activity-logs');
+    Route::view('/admin/reports', 'admin.reports')->name('admin.reports');
 
     // Caretaker
     Route::view('/caretaker/dashboard', 'caretaker.dashboard')->name('caretaker.dashboard');
@@ -61,4 +62,5 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/tenant/payments/{payment}/receipt', [PaymentController::class, 'downloadReceipt'])
             ->name('tenant.payments.receipt');
     });
+
 });

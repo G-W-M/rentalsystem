@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html>
 
@@ -101,4 +102,79 @@
 
 </body>
 
+=======
+{{-- resources/views/exports/users-pdf.blade.php --}}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Users Report</title>
+    <style>
+        body { font-family: DejaVu Sans, sans-serif; font-size: 10px; color: #1f2937; }
+        h1 { font-size: 16px; margin: 0 0 4px; }
+        .meta { color: #6b7280; font-size: 9px; margin-bottom: 12px; }
+        .filters { background: #f3f4f6; padding: 6px 8px; margin-bottom: 12px; font-size: 9px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #055236; color: #fff; text-align: left; padding: 6px; font-size: 9px; }
+        td { padding: 5px 6px; border-bottom: 1px solid #e5e7eb; }
+        tr:nth-child(even) td { background: #f9fafb; }
+        .badge-active { color: #16a34a; font-weight: bold; }
+        .badge-inactive { color: #dc2626; font-weight: bold; }
+        .empty { text-align: center; color: #9ca3af; padding: 20px; }
+    </style>
+</head>
+<body>
+
+<h1>System Users Report</h1>
+<div class="meta">
+    Generated {{ $generatedAt->format('d M Y, H:i') }} by {{ $generatedBy }} &nbsp;|&nbsp;
+    Total records: {{ $users->count() }}
+</div>
+
+@if(!empty($filters))
+    <div class="filters">
+        <strong>Filters applied:</strong>
+        @foreach($filters as $label => $value)
+            {{ $label }}: {{ $value }}@if(!$loop->last) &nbsp;|&nbsp; @endif
+        @endforeach
+    </div>
+@endif
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Full Name</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Last Login</th>
+            <th>Registered</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse($users as $u)
+            <tr>
+                <td>{{ $u->id }}</td>
+                <td>{{ $u->full_name }}</td>
+                <td>{{ $u->username ?? '-' }}</td>
+                <td>{{ $u->email }}</td>
+                <td>{{ $u->phone ?? '-' }}</td>
+                <td>{{ ucfirst($u->role) }}</td>
+                <td class="{{ $u->is_active ? 'badge-active' : 'badge-inactive' }}">
+                    {{ $u->is_active ? 'Active' : 'Inactive' }}
+                </td>
+                <td>{{ optional($u->last_login)->format('d M Y') ?? 'Never' }}</td>
+                <td>{{ optional($u->created_at)->format('d M Y') ?? '-' }}</td>
+            </tr>
+        @empty
+            <tr><td colspan="9" class="empty">No users match the selected filters.</td></tr>
+        @endforelse
+    </tbody>
+</table>
+
+</body>
+>>>>>>> 076421e84a66168988790ae31e4f00e41822a69e
 </html>

@@ -98,18 +98,19 @@
                     href="{{ route('admin.users') }}">
                     <i class="fas fa-users-cog me-2"></i> Users
                 </a>
-                <a class="nav-link {{ request()->routeIs('admin.reports') ? 'active' : '' }}"
-                    href="{{ route('admin.reports') }}">
-                    <i class="fas fa-file-arrow-down me-2"></i> Reports
-                </a>
-                <a class="nav-link {{ request()->routeIs('admin.activity-logs') ? 'active' : '' }}"
-                    href="{{ route('admin.activity-logs') }}">
-                    <i class="fas fa-clipboard-list me-2"></i> Activity Logs
-                </a>
-                <a class="nav-link {{ request()->routeIs('admin.settings') ? 'active' : '' }}"
-                    href="{{ route('admin.settings') }}">
-                    <i class="fas fa-gear me-2"></i> Settings
-                </a>
+                <<<<<<< HEAD======={{-- Reports & Exports --}}>>>>>>> 076421e84a66168988790ae31e4f00e41822a69e
+                    <a class="nav-link {{ request()->routeIs('admin.reports') ? 'active' : '' }}"
+                        href="{{ route('admin.reports') }}">
+                        <i class="fas fa-file-arrow-down me-2"></i> Reports
+                    </a>
+                    <a class="nav-link {{ request()->routeIs('admin.activity-logs') ? 'active' : '' }}"
+                        href="{{ route('admin.activity-logs') }}">
+                        <i class="fas fa-clipboard-list me-2"></i> Activity Logs
+                    </a>
+                    <a class="nav-link {{ request()->routeIs('admin.settings') ? 'active' : '' }}"
+                        href="{{ route('admin.settings') }}">
+                        <i class="fas fa-gear me-2"></i> Settings
+                    </a>
             </nav>
 
             <div class="sidebar-footer">
