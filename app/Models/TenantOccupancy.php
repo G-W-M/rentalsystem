@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\SerializesDatesReadably;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TenantOccupancy extends Model
 {
+    use SerializesDatesReadably;
+
     protected $fillable = [
         'tenant_id',
         'unit_id',

@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <div class="card shadow-sm rounded-lg border-0 mt-4">
+        <div class="card shadow-sm rounded-lg border-0 mt-3">
             <div class="card-header bg-white fw-semibold">Open Maintenance</div>
             <div class="card-body">
                 <span class="text-3xl font-bold text-warning" data-kpi="open_maintenance">--</span>
@@ -49,6 +49,32 @@
             });
         }
 
+        function statusBadge(status) {
+            const map = {
+                pending: {
+                    label: 'Pending',
+                    css: 'bg-warning text-dark'
+                },
+                awaiting_verification: {
+                    label: 'Awaiting Verification',
+                    css: 'bg-info text-dark'
+                },
+                completed: {
+                    label: 'Paid',
+                    css: 'bg-success'
+                },
+                rejected: {
+                    label: 'Rejected',
+                    css: 'bg-danger'
+                },
+            };
+            const s = map[status] || {
+                label: status,
+                css: 'bg-secondary'
+            };
+            return '<span class="badge ' + s.css + '">' + s.label + '</span>';
+        }
+
         async function load() {
             try {
                 const res = await fetch('/api/tenant/dashboard', {
@@ -63,9 +89,9 @@
 
                 const unit = document.getElementById('unit-block');
                 if (data.has_unit && data.unit) {
-                    unit.innerHTML = '<div class="h5 mb-1">' + data.unit.property + ' — Unit ' + data.unit.unit_number +
-                        '</div>' +
-                        '<div class="text-gray-600">Rent: ' + money(data.unit.rent) + '</div>' +
+                    unit.innerHTML =
+                        '<div class="h5 mb-1">' + data.unit.property + ' — Unit ' + data.unit.unit_number + '</div>' +
+                        '<div class="text-gray-600">Rent: KES ' + money(data.unit.rent) + '</div>' +
                         '<div class="text-gray-600">Since: ' + (data.unit.since || '-') + '</div>';
                 } else {
                     unit.innerHTML = '<div class="text-muted">You have no active unit yet.</div>';
@@ -73,11 +99,17 @@
 
                 const pay = document.getElementById('payment-block');
                 if (data.pending_payment) {
-                    pay.innerHTML = '<div class="h4 text-primary">' + money(data.pending_payment.amount) + '</div>' +
-                        '<div class="text-gray-600">Due: ' + (data.pending_payment.due_date || '-') + '</div>' +
-                        '<span class="badge bg-warning text-dark">' + data.pending_payment.status + '</span>';
+                    const p = data.pending_payment;
+                    const isSubmitted = p.status === 'awaiting_verification';
+                    const note = isSubmitted ?
+                        '<div class="text-gray-600 small mt-1">Submitted — awaiting caretaker verification.</div>' :
+                        '';
+                    pay.innerHTML =
+                        '<div class="h4 text-primary">' + money(p.amount) + '</div>' +
+                        '<div class="text-gray-600">Due: ' + (p.due_date || '-') + '</div>' +
+                        statusBadge(p.status) + note;
                 } else {
-                    pay.innerHTML = '<div class="text-muted">No pending payment. You are all caught up.</div>';
+                    pay.innerHTML = '<div class="text-muted">No pending payment. You are all caught up. ✓</div>';
                 }
 
                 document.querySelector('[data-kpi="open_maintenance"]').textContent = data.open_maintenance ?? 0;

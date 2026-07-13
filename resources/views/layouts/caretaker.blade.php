@@ -1,3 +1,4 @@
+{{-- resources/views/layouts/caretaker.blade.php --}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
@@ -8,7 +9,7 @@
 
     {{-- PWA --}}
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0d6efd">
+    <meta name="theme-color" content="#9BE866">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
     <title>@yield('title', 'Caretaker Portal') - Rental System</title>
@@ -17,6 +18,38 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     @vite(['resources/css/app.css'])
     @stack('styles')
+
+    <style>
+        html,
+        body {
+            min-height: 100vh;
+        }
+
+        body {
+            background-image: url('{{ asset('images/rentalbg.jpg') }}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+
+        .caretaker-sidebar {
+            background: #ffffff !important;
+        }
+
+        .mobile-header {
+            background: #ffffff !important;
+        }
+
+        .caretaker-main {
+            background: transparent !important;
+        }
+
+        .caretaker-main .card {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(4px);
+        }
+    </style>
 </head>
 
 <body>
@@ -27,7 +60,11 @@
     <div class="caretaker-shell">
         <aside class="caretaker-sidebar d-none d-lg-flex flex-column">
             <div class="sidebar-brand">
-                <div class="brand-chip">RS</div>
+                <div
+                    style="width:48px;height:48px;border-radius:50%;overflow:hidden;border:3px solid #9BE866;box-shadow:0 0 0 3px rgba(155,232,102,0.2);flex-shrink:0;background:#FEFDD6;">
+                    <img src="{{ asset('images/logo.jpg') }}" alt="Logo"
+                        style="width:100%;height:100%;object-fit:cover;">
+                </div>
                 <div>
                     <div class="brand-label">Rental System</div>
                     <div class="brand-title">Caretaker Portal</div>
@@ -74,7 +111,6 @@
                     href="{{ route('caretaker.activity-logs') }}">
                     <i class="fas fa-clipboard-list me-2"></i> Activity Logs
                 </a>
-                {{-- ✅ Settings link added here --}}
                 <a class="nav-link {{ request()->routeIs('caretaker.settings') ? 'active' : '' }}"
                     href="{{ route('caretaker.settings') }}">
                     <i class="fas fa-gear me-2"></i> Settings
@@ -98,7 +134,14 @@
                     data-bs-target="#sidebarOffcanvas">
                     <i class="fas fa-bars"></i>
                 </button>
-                <div class="portal-title">Caretaker Portal</div>
+                <div class="d-flex align-items-center gap-2">
+                    <div
+                        style="width:32px;height:32px;border-radius:50%;overflow:hidden;border:2px solid #9BE866;background:#FEFDD6;flex-shrink:0;">
+                        <img src="{{ asset('images/logo.jpg') }}" alt="Logo"
+                            style="width:100%;height:100%;object-fit:cover;">
+                    </div>
+                    <div class="portal-title">Caretaker Portal</div>
+                </div>
                 <div class="dropdown">
                     <button class="btn btn-outline-secondary btn-sm rounded-circle" data-bs-toggle="dropdown">
                         <i class="fas fa-user"></i>
@@ -119,45 +162,36 @@
         </main>
     </div>
 
-    {{-- Mobile offcanvas sidebar --}}
+    {{-- Mobile Offcanvas --}}
     <div class="offcanvas offcanvas-start caretaker-offcanvas" tabindex="-1" id="sidebarOffcanvas">
         <div class="offcanvas-header">
             <div class="d-flex align-items-center gap-3">
-                <div class="brand-chip">RS</div>
+                <div
+                    style="width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid #9BE866;background:#FEFDD6;flex-shrink:0;">
+                    <img src="{{ asset('images/logo.jpg') }}" alt="Logo"
+                        style="width:100%;height:100%;object-fit:cover;">
+                </div>
                 <div>
                     <div class="brand-label">Rental System</div>
-                    <div class="brand-title">Caretaker Portal</div>
+                    <div class="brand-title text-white">Caretaker Portal</div>
                 </div>
             </div>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
         </div>
         <div class="offcanvas-body">
             <nav class="nav nav-pills flex-column gap-1">
-                <a class="nav-link {{ request()->routeIs('caretaker.dashboard') ? 'active' : '' }}"
-                    href="{{ route('caretaker.dashboard') }}">
-                    <i class="fas fa-th-large me-2"></i> Dashboard
-                </a>
-                <a class="nav-link {{ request()->routeIs('caretaker.tasks*') ? 'active' : '' }}"
-                    href="{{ route('caretaker.tasks.index') }}">
-                    <i class="fas fa-list-check me-2"></i> Tasks
-                </a>
-                <a class="nav-link {{ request()->routeIs('caretaker.maintenance*') ? 'active' : '' }}"
-                    href="{{ route('caretaker.maintenance.index') }}">
-                    <i class="fas fa-wrench me-2"></i> Maintenance
-                </a>
-                <a class="nav-link {{ request()->routeIs('caretaker.payments*') ? 'active' : '' }}"
-                    href="{{ route('caretaker.payments.index') }}">
-                    <i class="fas fa-receipt me-2"></i> Verify Payments
-                </a>
-                <a class="nav-link {{ request()->routeIs('caretaker.activity-logs') ? 'active' : '' }}"
-                    href="{{ route('caretaker.activity-logs') }}">
-                    <i class="fas fa-clipboard-list me-2"></i> Activity Logs
-                </a>
-                {{-- ✅ Settings link added here too --}}
-                <a class="nav-link {{ request()->routeIs('caretaker.settings') ? 'active' : '' }}"
-                    href="{{ route('caretaker.settings') }}">
-                    <i class="fas fa-gear me-2"></i> Settings
-                </a>
+                <a class="nav-link" href="{{ route('caretaker.dashboard') }}"><i class="fas fa-th-large me-2"></i>
+                    Dashboard</a>
+                <a class="nav-link" href="{{ route('caretaker.tasks.index') }}"><i
+                        class="fas fa-list-check me-2"></i> Tasks</a>
+                <a class="nav-link" href="{{ route('caretaker.maintenance.index') }}"><i
+                        class="fas fa-wrench me-2"></i> Maintenance</a>
+                <a class="nav-link" href="{{ route('caretaker.payments.index') }}"><i
+                        class="fas fa-receipt me-2"></i> Verify Payments</a>
+                <a class="nav-link" href="{{ route('caretaker.activity-logs') }}"><i
+                        class="fas fa-clipboard-list me-2"></i> Activity Logs</a>
+                <a class="nav-link" href="{{ route('caretaker.settings') }}"><i class="fas fa-gear me-2"></i>
+                    Settings</a>
             </nav>
         </div>
     </div>

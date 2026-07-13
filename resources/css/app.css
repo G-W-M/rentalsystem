@@ -1,10 +1,3 @@
-/* ========================================
-   APP.CSS - Core Styles & Utilities
-   Yeti Bootstrap Theme Customization
-   Colors: #055236, #7FA48E, #2D4C39, #80B9B1, #6C27DA
-   ======================================== */
-
-   /* ===== Global Background ===== */
 body.bg-photo {
     background-image: url('../images/bg.jpg');
     background-size: cover;

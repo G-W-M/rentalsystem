@@ -30,6 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin
     Route::view('/admin/dashboard', 'admin.dashboard')->name('admin.dashboard');
     Route::view('/admin/users', 'admin.users')->name('admin.users');
+    Route::view('/admin/reports', 'admin.reports')->name('admin.reports');
     Route::view('/admin/settings', 'admin.settings')->name('admin.settings');
     Route::view('/admin/activity-logs', 'admin.activity-logs')->name('admin.activity-logs');
 

@@ -4,16 +4,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Rental System') }} - Welcome</title>
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
-
-    <!-- Your existing CSS/JS via Vite -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-
+    <title>{{ config('app.name', 'Rental System') }}</title>
+    @vite(['resources/css/app.css'])
     <style>
         * {
             margin: 0;
@@ -22,157 +14,147 @@
         }
 
         body {
-            font-family: 'Figtree', sans-serif;
-            background: #f3f4f6;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1rem;
+            background: url('{{ asset('images/rentalbg.jpg') }}') center/cover no-repeat;
+            position: relative;
         }
 
-        .welcome-container {
-            background: white;
-            border-radius: 1rem;
-            padding: 3rem 4rem;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            max-width: 500px;
-            width: 100%;
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: 0;
         }
 
-        .welcome-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 0.5rem;
-        }
-
-        .welcome-title span {
-            color: #4f46e5;
-        }
-
-        .welcome-subtitle {
-            color: #6b7280;
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-        }
-
-        .btn-group {
+        .splash {
+            position: relative;
+            z-index: 1;
             display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
         }
 
-        .btn {
-            padding: 0.75rem 2rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s;
-            display: inline-block;
-            min-width: 140px;
+        .logo-ring {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid #9BE866;
+            box-shadow: 0 0 0 6px rgba(155, 232, 102, 0.25),
+                0 20px 60px rgba(0, 0, 0, 0.4);
+            background: #FEFDD6;
+            animation: pulse 2s ease-in-out infinite;
         }
 
-        .btn-primary {
-            background: #4f46e5;
-            color: white;
+        .logo-ring img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
-        .btn-primary:hover {
-            background: #4338ca;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 6px rgba(155, 232, 102, 0.25), 0 20px 60px rgba(0, 0, 0, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 0 14px rgba(155, 232, 102, 0.12), 0 20px 60px rgba(0, 0, 0, 0.4);
+            }
         }
 
-        .btn-secondary {
-            background: #e5e7eb;
-            color: #1a1a2e;
-        }
-
-        .btn-secondary:hover {
-            background: #d1d5db;
-            transform: translateY(-2px);
-        }
-
-        .countdown-badge {
-            display: inline-block;
-            background: #f3f4f6;
-            padding: 0.5rem 1rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            color: #6b7280;
-            margin-top: 1.5rem;
-        }
-
-        .countdown-badge span {
+        .system-name {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 1.5rem;
             font-weight: 700;
-            color: #4f46e5;
-            font-size: 1.1rem;
+            color: #ffffff;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
         }
 
-        .footer-text {
-            margin-top: 2rem;
-            color: #9ca3af;
-            font-size: 0.875rem;
+        .loading-row {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: rgba(255, 255, 255, 0.85);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 0.95rem;
+            letter-spacing: 0.04em;
         }
 
-        @media (max-width: 640px) {
-            .welcome-container {
-                padding: 2rem 1.5rem;
+        .dots span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #9BE866;
+            animation: bounce 1.2s ease-in-out infinite;
+        }
+
+        .dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0.7);
+
             }
 
-            .welcome-title {
-                font-size: 2rem;
+            40% {
+                transform: scale(1);
+
             }
 
-            .btn {
+            .footer-text {
+                position: fixed;
+                bottom: 1.5rem;
                 width: 100%;
-                min-width: unset;
+                text-align: center;
+                color: rgba(255, 255, 255, 0.55);
+                font-family: 'Segoe UI', Arial, sans-serif;
+                font-size: 0.8rem;
+                z-index: 1;
             }
-
-            .btn-group {
-                flex-direction: column;
-            }
-        }
     </style>
 </head>
 
 <body>
-    <div class="welcome-container">
-        <h1 class="welcome-title"><span>Rental</span> System</h1>
-        <p class="welcome-subtitle">Welcome to your property management solution</p>
-
-        <div class="btn-group">
-            <a href="{{ route('login') }}" class="btn btn-primary">Sign In</a>
-            <a href="{{ route('register') }}" class="btn btn-secondary">Register</a>
+    <div class="splash">
+        <div class="logo-ring">
+            <img src="{{ asset('images/logo.jpg') }}" alt="Rental System Logo">
         </div>
-
-        <div class="countdown-badge">
-            Redirecting to login in <span id="countdown">4</span> seconds...
-        </div>
-
-        <div class="footer-text">
-            &copy; {{ date('Y') }} Rental System. All rights reserved.
+        <div class="system-name">Rental System</div>
+        <div class="loading-row">
+            Loading
+            <div class="dots">
+                <span></span><span></span><span></span>
+            </div>
         </div>
     </div>
 
-    <script>
-        // Countdown timer - redirect to login after 4 seconds
-        let seconds = 4;
-        const countdownElement = document.getElementById('countdown');
+    <div class="footer-text">
+        &copy; {{ date('Y') }} Rental System. All rights reserved.
+    </div>
 
-        const interval = setInterval(function() {
-            seconds--;
-            if (countdownElement) {
-                countdownElement.textContent = seconds;
-            }
-            if (seconds <= 0) {
-                clearInterval(interval);
-                window.location.href = "{{ route('login') }}";
-            }
-        }, 1000);
+    <script>
+        setTimeout(function() {
+            window.location.href = "{{ route('login') }}";
+        }, 5000);
     </script>
 </body>
 

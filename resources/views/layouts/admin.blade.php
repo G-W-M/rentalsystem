@@ -8,7 +8,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#055236">
+    <meta name="theme-color" content="#9BE866">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
     <title>@yield('title', 'Admin Portal') - Rental System</title>
@@ -17,6 +17,38 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     @vite(['resources/css/app.css'])
     @stack('styles')
+
+    <style>
+        html,
+        body {
+            min-height: 100vh;
+        }
+
+        body {
+            background-image: url('{{ asset('images/rentalbg.jpg') }}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+
+        .landlord-sidebar {
+            background: #ffffff !important;
+        }
+
+        .mobile-header {
+            background: #ffffff !important;
+        }
+
+        .landlord-main {
+            background: transparent !important;
+        }
+
+        .landlord-main .card {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(4px);
+        }
+    </style>
 </head>
 
 <body>
@@ -27,12 +59,17 @@
     <div class="landlord-shell">
         <aside class="landlord-sidebar d-none d-lg-flex flex-column">
             <div class="sidebar-brand">
-                <div class="brand-chip">RS</div>
+                <div
+                    style="width:48px;height:48px;border-radius:50%;overflow:hidden;border:3px solid #9BE866;box-shadow:0 0 0 3px rgba(155,232,102,0.2);flex-shrink:0;background:#FEFDD6;">
+                    <img src="{{ asset('images/logo.jpg') }}" alt="Logo"
+                        style="width:100%;height:100%;object-fit:cover;">
+                </div>
                 <div>
                     <div class="brand-label">Rental System</div>
                     <div class="brand-title">Admin Portal</div>
                 </div>
             </div>
+
             <div class="dropdown me-2" id="notif-bell">
                 <button class="btn btn-outline-secondary btn-sm rounded-circle position-relative"
                     data-bs-toggle="dropdown">
@@ -46,10 +83,12 @@
                     <li class="dropdown-item text-muted small">Loading...</li>
                 </ul>
             </div>
+
             <button class="btn btn-outline-secondary btn-sm rounded-circle me-2" id="theme-toggle"
                 title="Toggle dark mode">
                 <i class="fas fa-moon"></i>
             </button>
+
             <nav class="nav nav-pills flex-column gap-1">
                 <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
                     href="{{ route('admin.dashboard') }}">
@@ -59,7 +98,14 @@
                     href="{{ route('admin.users') }}">
                     <i class="fas fa-users-cog me-2"></i> Users
                 </a>
-                {{-- ✅ Settings link added here --}}
+                <a class="nav-link {{ request()->routeIs('admin.reports') ? 'active' : '' }}"
+                    href="{{ route('admin.reports') }}">
+                    <i class="fas fa-file-arrow-down me-2"></i> Reports
+                </a>
+                <a class="nav-link {{ request()->routeIs('admin.activity-logs') ? 'active' : '' }}"
+                    href="{{ route('admin.activity-logs') }}">
+                    <i class="fas fa-clipboard-list me-2"></i> Activity Logs
+                </a>
                 <a class="nav-link {{ request()->routeIs('admin.settings') ? 'active' : '' }}"
                     href="{{ route('admin.settings') }}">
                     <i class="fas fa-gear me-2"></i> Settings
@@ -71,7 +117,6 @@
                 <div class="user-name">{{ Auth::user()->full_name ?? 'Admin' }}</div>
                 <div class="user-email">{{ Auth::user()->email ?? 'admin@example.com' }}</div>
                 <div class="mt-2"><span class="badge bg-dark">Administrator</span></div>
-                <a class="dropdown-item small" href="{{ route('admin.settings') }}">Settings</a>
                 <button type="submit" form="logout-form" class="btn btn-outline-secondary btn-sm w-100 mt-2">
                     <i class="fas fa-sign-out-alt me-2"></i> Logout
                 </button>
@@ -84,16 +129,26 @@
                     data-bs-target="#sidebarOffcanvas">
                     <i class="fas fa-bars"></i>
                 </button>
-                <div class="portal-title">Admin Portal</div>
+                <div class="d-flex align-items-center gap-2">
+                    <div
+                        style="width:32px;height:32px;border-radius:50%;overflow:hidden;border:2px solid #9BE866;background:#FEFDD6;flex-shrink:0;">
+                        <img src="{{ asset('images/logo.jpg') }}" alt="Logo"
+                            style="width:100%;height:100%;object-fit:cover;">
+                    </div>
+                    <div class="portal-title">Admin Portal</div>
+                </div>
                 <div class="dropdown">
-                    <button class="btn btn-outline-secondary btn-sm rounded-circle" data-bs-toggle="dropdown"><i
-                            class="fas fa-user"></i></button>
+                    <button class="btn btn-outline-secondary btn-sm rounded-circle" data-bs-toggle="dropdown">
+                        <i class="fas fa-user"></i>
+                    </button>
                     <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ route('admin.reports') }}">Reports</a></li>
                         <li><a class="dropdown-item" href="{{ route('admin.settings') }}">Settings</a></li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-                        <li><button type="submit" form="logout-form" class="dropdown-item text-danger">Logout</button>
+                        <li>
+                            <button type="submit" form="logout-form" class="dropdown-item text-danger">Logout</button>
                         </li>
                     </ul>
                 </div>
@@ -106,20 +161,32 @@
     <div class="offcanvas offcanvas-start landlord-offcanvas" tabindex="-1" id="sidebarOffcanvas">
         <div class="offcanvas-header">
             <div class="d-flex align-items-center gap-3">
-                <div class="brand-chip">RS</div>
+                <div
+                    style="width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid #9BE866;background:#FEFDD6;flex-shrink:0;">
+                    <img src="{{ asset('images/logo.jpg') }}" alt="Logo"
+                        style="width:100%;height:100%;object-fit:cover;">
+                </div>
                 <div>
                     <div class="brand-label">Rental System</div>
-                    <div class="brand-title">Admin Portal</div>
+                    <div class="brand-title text-white">Admin Portal</div>
                 </div>
             </div>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
         </div>
         <div class="offcanvas-body">
             <nav class="nav nav-pills flex-column gap-1">
-                <a class="nav-link" href="{{ route('admin.dashboard') }}"><i class="fas fa-th-large me-2"></i>
-                    Dashboard</a>
-                <a class="nav-link" href="{{ route('admin.users') }}"><i class="fas fa-users-cog me-2"></i> Users</a>
-                {{-- ✅ Settings link added here too --}}
+                <a class="nav-link" href="{{ route('admin.dashboard') }}">
+                    <i class="fas fa-th-large me-2"></i> Dashboard
+                </a>
+                <a class="nav-link" href="{{ route('admin.users') }}">
+                    <i class="fas fa-users-cog me-2"></i> Users
+                </a>
+                <a class="nav-link" href="{{ route('admin.reports') }}">
+                    <i class="fas fa-file-arrow-down me-2"></i> Reports
+                </a>
+                <a class="nav-link" href="{{ route('admin.activity-logs') }}">
+                    <i class="fas fa-clipboard-list me-2"></i> Activity Logs
+                </a>
                 <a class="nav-link" href="{{ route('admin.settings') }}">
                     <i class="fas fa-gear me-2"></i> Settings
                 </a>

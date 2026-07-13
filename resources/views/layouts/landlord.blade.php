@@ -8,7 +8,7 @@
 
     {{-- PWA --}}
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0d6efd">
+    <meta name="theme-color" content="#9BE866">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
     <title>@yield('title', 'Landlord Portal') - Rental System</title>
@@ -17,6 +17,43 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     @vite(['resources/css/app.css'])
     @stack('styles')
+
+    <style>
+        html,
+        body {
+            min-height: 100vh;
+        }
+
+        body {
+            background-image: url('{{ asset('images/rentalbg.jpg') }}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+
+        /* Sidebar stays solid white so content remains readable */
+        .landlord-sidebar {
+            background: #ffffff !important;
+        }
+
+        /* Mobile header stays solid white */
+        .mobile-header {
+            background: #ffffff !important;
+        }
+
+        /* Main content area is transparent — bg image shows through
+           between the white cards */
+        .landlord-main {
+            background: transparent !important;
+        }
+
+        /* Cards get a slight frosted look over the image */
+        .landlord-main .card {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(4px);
+        }
+    </style>
 </head>
 
 <body>
@@ -27,12 +64,17 @@
     <div class="landlord-shell">
         <aside class="landlord-sidebar d-none d-lg-flex flex-column">
             <div class="sidebar-brand">
-                <div class="brand-chip">RS</div>
+                <div
+                    style="width:48px;height:48px;border-radius:50%;overflow:hidden;border:3px solid #9BE866;box-shadow:0 0 0 3px rgba(155,232,102,0.2);flex-shrink:0;background:#FEFDD6;">
+                    <img src="{{ asset('images/logo.jpg') }}" alt="Logo"
+                        style="width:100%;height:100%;object-fit:cover;">
+                </div>
                 <div>
                     <div class="brand-label">Rental System</div>
                     <div class="brand-title">Landlord Portal</div>
                 </div>
             </div>
+
             <div class="dropdown me-2" id="notif-bell">
                 <button class="btn btn-outline-secondary btn-sm rounded-circle position-relative"
                     data-bs-toggle="dropdown">
@@ -46,10 +88,12 @@
                     <li class="dropdown-item text-muted small">Loading...</li>
                 </ul>
             </div>
+
             <button class="btn btn-outline-secondary btn-sm rounded-circle me-2" id="theme-toggle"
                 title="Toggle dark mode">
                 <i class="fas fa-moon"></i>
             </button>
+
             <nav class="nav nav-pills flex-column gap-1">
                 <a class="nav-link {{ request()->routeIs('landlord.dashboard') ? 'active' : '' }}"
                     href="{{ route('landlord.dashboard') }}">
@@ -83,7 +127,6 @@
                     href="{{ route('landlord.maintenance.index') }}">
                     <i class="fas fa-wrench me-2"></i> Maintenance
                 </a>
-                {{-- ✅ Settings link added here --}}
                 <a class="nav-link {{ request()->routeIs('landlord.settings*') ? 'active' : '' }}"
                     href="{{ route('landlord.settings') }}">
                     <i class="fas fa-gear me-2"></i> Settings
@@ -107,7 +150,14 @@
                     data-bs-target="#sidebarOffcanvas">
                     <i class="fas fa-bars"></i>
                 </button>
-                <div class="portal-title">Landlord Portal</div>
+                <div class="d-flex align-items-center gap-2">
+                    <div
+                        style="width:32px;height:32px;border-radius:50%;overflow:hidden;border:2px solid #9BE866;background:#FEFDD6;flex-shrink:0;">
+                        <img src="{{ asset('images/logo.jpg') }}" alt="Logo"
+                            style="width:100%;height:100%;object-fit:cover;">
+                    </div>
+                    <div class="portal-title">Landlord Portal</div>
+                </div>
                 <div class="dropdown">
                     <button class="btn btn-outline-secondary btn-sm rounded-circle" data-bs-toggle="dropdown">
                         <i class="fas fa-user"></i>
@@ -118,7 +168,8 @@
                             <hr class="dropdown-divider">
                         </li>
                         <li>
-                            <button type="submit" form="logout-form" class="dropdown-item text-danger">Logout</button>
+                            <button type="submit" form="logout-form"
+                                class="dropdown-item text-danger">Logout</button>
                         </li>
                     </ul>
                 </div>
@@ -131,10 +182,14 @@
     <div class="offcanvas offcanvas-start landlord-offcanvas" tabindex="-1" id="sidebarOffcanvas">
         <div class="offcanvas-header">
             <div class="d-flex align-items-center gap-3">
-                <div class="brand-chip">RS</div>
+                <div
+                    style="width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid #9BE866;background:#FEFDD6;flex-shrink:0;">
+                    <img src="{{ asset('images/logo.jpg') }}" alt="Logo"
+                        style="width:100%;height:100%;object-fit:cover;">
+                </div>
                 <div>
                     <div class="brand-label">Rental System</div>
-                    <div class="brand-title">Landlord Portal</div>
+                    <div class="brand-title text-white">Landlord Portal</div>
                 </div>
             </div>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
@@ -149,16 +204,16 @@
                     Units</a>
                 <a class="nav-link" href="{{ route('landlord.caretakers') }}"><i class="fas fa-user-tie me-2"></i>
                     Caretakers</a>
+                <a class="nav-link" href="{{ route('landlord.activity-logs') }}"><i
+                        class="fas fa-clipboard-list me-2"></i> Activity Logs</a>
                 <a class="nav-link" href="{{ route('landlord.tenants.index') }}"><i class="fas fa-users me-2"></i>
                     Tenants</a>
                 <a class="nav-link" href="{{ route('landlord.payments.index') }}"><i
                         class="fas fa-credit-card me-2"></i> Payments</a>
                 <a class="nav-link" href="{{ route('landlord.maintenance.index') }}"><i
                         class="fas fa-wrench me-2"></i> Maintenance</a>
-                {{-- ✅ Settings link added here too --}}
-                <a class="nav-link" href="{{ route('landlord.settings') }}">
-                    <i class="fas fa-gear me-2"></i> Settings
-                </a>
+                <a class="nav-link" href="{{ route('landlord.settings') }}"><i class="fas fa-gear me-2"></i>
+                    Settings</a>
             </nav>
         </div>
     </div>

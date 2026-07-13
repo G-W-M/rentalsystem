@@ -17,6 +17,28 @@
     <!-- Custom assets (app.js imports all project CSS modules) -->
     @vite(['resources/js/app.js'])
     @stack('styles')
+
+    <style>
+        html,
+        body {
+            min-height: 100vh;
+        }
+
+        body {
+            background-image: url('{{ asset('images/rentalbg.jpg') }}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+
+        /* Keep sidebar, navbar and content cards readable over the image
+           by giving them a solid/semi-transparent background rather than
+           inheriting the body background directly. */
+        #app {
+            min-height: 100vh;
+        }
+    </style>
 </head>
 
 <body>

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\SerializesDatesReadably;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -10,11 +11,13 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, Notifiable;
-public const ROLE_ADMIN = 'admin';
-public const ROLE_LANDLORD = 'landlord';
-public const ROLE_CARETAKER = 'caretaker';
-public const ROLE_TENANT = 'tenant';
+    use HasApiTokens, Notifiable, SerializesDatesReadably;
+
+    public const ROLE_ADMIN = 'admin';
+    public const ROLE_LANDLORD = 'landlord';
+    public const ROLE_CARETAKER = 'caretaker';
+    public const ROLE_TENANT = 'tenant';
+
     protected $fillable = [
         'username',
         'email',

@@ -1,3 +1,4 @@
+{{-- resources/views/layouts/tenant.blade.php --}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
@@ -6,21 +7,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    {{-- PWA --}}
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0d6efd">
+    <meta name="theme-color" content="#9BE866">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
     <title>@yield('title', 'Tenant Portal') - Rental System</title>
 
-    {{-- Font Awesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-    {{-- Bootstrap 5 --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    {{-- Custom CSS --}}
     @vite(['resources/css/app.css'])
     @stack('styles')
+
+    <style>
+        html,
+        body {
+            min-height: 100vh;
+        }
+
+        body {
+            background-image: url('{{ asset('images/rentalbg.jpg') }}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+
+        .tenant-sidebar {
+            background: #ffffff !important;
+        }
+
+        .mobile-header {
+            background: #ffffff !important;
+        }
+
+        .tenant-main {
+            background: transparent !important;
+        }
+
+        .tenant-main .card {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(4px);
+        }
+    </style>
 </head>
 
 <body>
@@ -32,7 +61,11 @@
         {{-- Desktop Sidebar --}}
         <aside class="tenant-sidebar d-none d-lg-flex flex-column">
             <div class="sidebar-brand">
-                <div class="brand-chip">RS</div>
+                <div
+                    style="width:48px;height:48px;border-radius:50%;overflow:hidden;border:3px solid #9BE866;box-shadow:0 0 0 3px rgba(155,232,102,0.2);flex-shrink:0;background:#FEFDD6;">
+                    <img src="{{ asset('images/logo.jpg') }}" alt="Logo"
+                        style="width:100%;height:100%;object-fit:cover;">
+                </div>
                 <div>
                     <div class="brand-label">Rental System</div>
                     <div class="brand-title">Tenant Portal</div>
@@ -75,7 +108,6 @@
                     href="{{ route('tenant.maintenance') }}">
                     <i class="fas fa-wrench me-2"></i> Maintenance
                 </a>
-                {{-- ✅ Settings link added here --}}
                 <a class="nav-link {{ request()->routeIs('tenant.settings') ? 'active' : '' }}"
                     href="{{ route('tenant.settings') }}">
                     <i class="fas fa-gear me-2"></i> Settings
@@ -86,9 +118,7 @@
                 <div class="small text-muted mb-1">Signed in as</div>
                 <div class="user-name">{{ Auth::user()->full_name ?? 'Tenant' }}</div>
                 <div class="user-email">{{ Auth::user()->email ?? 'tenant@example.com' }}</div>
-                <div class="mt-2">
-                    <span class="badge bg-success">Active</span>
-                </div>
+                <div class="mt-2"><span class="badge bg-success">Active Tenant</span></div>
                 <button type="submit" form="logout-form" class="btn btn-outline-secondary btn-sm w-100 mt-2">
                     <i class="fas fa-sign-out-alt me-2"></i> Logout
                 </button>
@@ -97,13 +127,19 @@
 
         {{-- Main Content --}}
         <main class="tenant-main">
-            {{-- Mobile Header --}}
             <div class="mobile-header">
                 <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas"
                     data-bs-target="#sidebarOffcanvas">
                     <i class="fas fa-bars"></i>
                 </button>
-                <div class="portal-title">Tenant Portal</div>
+                <div class="d-flex align-items-center gap-2">
+                    <div
+                        style="width:32px;height:32px;border-radius:50%;overflow:hidden;border:2px solid #9BE866;background:#FEFDD6;flex-shrink:0;">
+                        <img src="{{ asset('images/logo.jpg') }}" alt="Logo"
+                            style="width:100%;height:100%;object-fit:cover;">
+                    </div>
+                    <div class="portal-title">Tenant Portal</div>
+                </div>
                 <div class="dropdown">
                     <button class="btn btn-outline-secondary btn-sm rounded-circle" data-bs-toggle="dropdown">
                         <i class="fas fa-user"></i>
@@ -114,59 +150,47 @@
                             <hr class="dropdown-divider">
                         </li>
                         <li>
-                            <button type="submit" form="logout-form" class="dropdown-item text-danger">
-                                Logout
-                            </button>
+                            <button type="submit" form="logout-form" class="dropdown-item text-danger">Logout</button>
                         </li>
                     </ul>
                 </div>
             </div>
 
-            {{-- Page Content --}}
             @yield('content')
         </main>
     </div>
 
-    {{-- Mobile Offcanvas Sidebar --}}
+    {{-- Mobile Offcanvas --}}
     <div class="offcanvas offcanvas-start tenant-offcanvas" tabindex="-1" id="sidebarOffcanvas">
         <div class="offcanvas-header">
             <div class="d-flex align-items-center gap-3">
-                <div class="brand-chip">RS</div>
+                <div
+                    style="width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid #9BE866;background:#FEFDD6;flex-shrink:0;">
+                    <img src="{{ asset('images/logo.jpg') }}" alt="Logo"
+                        style="width:100%;height:100%;object-fit:cover;">
+                </div>
                 <div>
                     <div class="brand-label">Rental System</div>
-                    <div class="brand-title">Tenant Portal</div>
+                    <div class="brand-title text-white">Tenant Portal</div>
                 </div>
             </div>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
         </div>
         <div class="offcanvas-body">
             <nav class="nav nav-pills flex-column gap-1">
-                <a class="nav-link {{ request()->routeIs('tenant.dashboard') ? 'active' : '' }}"
-                    href="{{ route('tenant.dashboard') }}">
-                    <i class="fas fa-th-large me-2"></i> Dashboard
-                </a>
-                <a class="nav-link {{ request()->routeIs('tenant.unit') ? 'active' : '' }}"
-                    href="{{ route('tenant.unit') }}">
-                    <i class="fas fa-home me-2"></i> My Unit
-                </a>
-                <a class="nav-link {{ request()->routeIs('tenant.payments') ? 'active' : '' }}"
-                    href="{{ route('tenant.payments') }}">
-                    <i class="fas fa-credit-card me-2"></i> Payments
-                </a>
-                <a class="nav-link {{ request()->routeIs('tenant.maintenance') ? 'active' : '' }}"
-                    href="{{ route('tenant.maintenance') }}">
-                    <i class="fas fa-wrench me-2"></i> Maintenance
-                </a>
-                {{-- ✅ Settings link added here too --}}
-                <a class="nav-link {{ request()->routeIs('tenant.settings') ? 'active' : '' }}"
-                    href="{{ route('tenant.settings') }}">
-                    <i class="fas fa-gear me-2"></i> Settings
-                </a>
+                <a class="nav-link" href="{{ route('tenant.dashboard') }}"><i class="fas fa-th-large me-2"></i>
+                    Dashboard</a>
+                <a class="nav-link" href="{{ route('tenant.unit') }}"><i class="fas fa-home me-2"></i> My Unit</a>
+                <a class="nav-link" href="{{ route('tenant.payments') }}"><i class="fas fa-credit-card me-2"></i>
+                    Payments</a>
+                <a class="nav-link" href="{{ route('tenant.maintenance') }}"><i class="fas fa-wrench me-2"></i>
+                    Maintenance</a>
+                <a class="nav-link" href="{{ route('tenant.settings') }}"><i class="fas fa-gear me-2"></i>
+                    Settings</a>
             </nav>
         </div>
     </div>
 
-    {{-- Scripts --}}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     @vite(['resources/js/app.js'])
     @stack('scripts')

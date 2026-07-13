@@ -36,19 +36,19 @@ class PaymentController extends Controller
     public function tenantUnits(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         // Get the tenant record
         $tenant = Tenant::where('user_id', $user->id)->first();
-        
+
         if (!$tenant) {
             return response()->json(['message' => 'Tenant profile not found.'], 404);
         }
-        
+
         // Get units assigned to this tenant
         $units = Unit::where('tenant_id', $tenant->id)
             ->with('property')
             ->get();
-        
+
         return response()->json($units);
     }
 
@@ -88,10 +88,10 @@ class PaymentController extends Controller
     public function addPayment(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         // Get the tenant record
         $tenant = Tenant::where('user_id', $user->id)->first();
-        
+
         if (!$tenant) {
             return response()->json(['message' => 'Tenant profile not found.'], 404);
         }
@@ -144,7 +144,7 @@ class PaymentController extends Controller
         Notifications::create([
             'user_id' => $user->id,
             'title' => 'Payment submitted',
-            'message' => 'Your payment of ' . number_format($request->amount, 2) . 
+            'message' => 'Your payment of ' . number_format($request->amount, 2) .
                         ' has been submitted for verification.',
             'type' => 'payment',
         ]);
@@ -253,13 +253,13 @@ class PaymentController extends Controller
       public function caretakerVerifiedIndex(Request $request): JsonResponse
     {
         $caretaker = \App\Models\Caretaker::where('user_id', $request->user()->id)->first();
- 
+
         if (! $caretaker || ! $caretaker->property_id) {
             return response()->json(['message' => 'No property assigned to this caretaker.'], 403);
         }
- 
+
         $unitIds = Unit::where('property_id', $caretaker->property_id)->pluck('id');
- 
+
         $payments = Payment::whereIn('unit_id', $unitIds)
             ->where('verified_by', $request->user()->id)
             ->where('status', 'completed')
@@ -269,10 +269,10 @@ class PaymentController extends Controller
             ])
             ->latest('verified_at')
             ->paginate(20);
- 
+
         return response()->json($payments);
     }
- 
+
 
     // ============================================================
     // NEW METHODS ADDED BELOW
@@ -287,14 +287,14 @@ class PaymentController extends Controller
     public function pendingForCaretaker(Request $request): JsonResponse
     {
         $caretaker = \App\Models\Caretaker::where('user_id', $request->user()->id)->first();
- 
+
         if (! $caretaker || ! $caretaker->property_id) {
             return response()->json(['message' => 'No property assigned to this caretaker.'], 403);
         }
- 
+
         // Get all unit IDs for the caretaker's property.
         $unitIds = Unit::where('property_id', $caretaker->property_id)->pluck('id');
- 
+
         $payments = Payment::whereIn('unit_id', $unitIds)
             ->where('status', 'pending')
             ->whereNotNull('transaction_id')   // tenant has submitted a code — awaiting verification
@@ -304,62 +304,62 @@ class PaymentController extends Controller
             ])
             ->latest('payment_date')
             ->get();
- 
+
         return response()->json($payments);
     }
      public function payRent(Request $request): JsonResponse
     {
         $userId = $request->user()->id;
- 
+
         $occupancy = \App\Models\TenantOccupancy::where('tenant_id', $userId)
             ->where('is_current', true)
             ->first();
- 
+
         if (! $occupancy) {
             return response()->json(['message' => 'No active unit found.'], 422);
         }
- 
+
         $unit       = Unit::find($occupancy->unit_id);
         $rentAmount = $occupancy->rent_amount_at_start ?? $unit->rent_amount;
         $now        = Carbon::now();
- 
+
         // Lease runs up to end_date, max 24 months ahead
         $leaseEnd = $occupancy->end_date
             ? Carbon::parse($occupancy->end_date)->startOfMonth()
             : $now->copy()->addMonths(24)->startOfMonth();
- 
+
         // Build array of all months from current month to lease end
         $allMonths = [];
         $start = $now->copy()->startOfMonth();
         $temp  = $start->copy();
         $count = 0;
- 
+
         while ($temp->lessThanOrEqualTo($leaseEnd) && $count < 24) {
             $allMonths[] = $temp->copy();
             $temp->addMonthNoOverflow();
             $count++;
         }
- 
+
         // Get all payment rows for this tenant+unit in one query (no N+1)
         $existingPayments = Payment::where('tenant_id', $userId)
             ->where('unit_id', $occupancy->unit_id)
             ->get()
             ->keyBy(fn($p) => Carbon::parse($p->due_date)->format('Y-m'));
- 
+
         // Build payable months list — skip months that are already completed
         $payableMonths = [];
- 
+
         foreach ($allMonths as $month) {
             $key      = $month->format('Y-m');
             $existing = $existingPayments->get($key);
- 
+
             // Skip if already fully paid
             if ($existing && $existing->status === 'completed') {
                 continue;
             }
- 
+
             $due = $month->copy()->addDays(4); // due on day 5
- 
+
             $payableMonths[] = [
                 'payment_id'     => $existing?->id,
                 'month_key'      => $key,
@@ -370,19 +370,19 @@ class PaymentController extends Controller
                 'transaction_id' => $existing?->transaction_id,
             ];
         }
- 
+
         if (empty($payableMonths)) {
             return response()->json([
                 'message' => 'Your rent is fully paid up to the end of your lease.',
             ], 422);
         }
- 
+
         return response()->json([
             'unit'           => $unit->unit_number,
             'payable_months' => $payableMonths,
         ]);
     }
- 
+
     /**
      * POST /api/tenant/payments/{payment}/submit
      * Tenant submits a transaction reference (Pay Rent flow + per-row Submit Code flow).
@@ -435,26 +435,26 @@ class PaymentController extends Controller
     }  public function initAndSubmit(Request $request): JsonResponse
     {
         $userId = $request->user()->id;
- 
+
         $data = $request->validate([
             'due_date'       => ['required', 'date'],
             'transaction_id' => ['required', 'string', 'max:100', 'unique:payments,transaction_id'],
             'payment_method' => ['required', 'in:mpesa,bank,cash,cheque'],
         ]);
- 
+
         $occupancy = \App\Models\TenantOccupancy::where('tenant_id', $userId)
             ->where('is_current', true)
             ->with('unit')
             ->first();
- 
+
         if (! $occupancy || ! $occupancy->unit) {
             return response()->json(['message' => 'No active unit found.'], 422);
         }
- 
+
         $unit       = $occupancy->unit;
         $dueCarbon  = Carbon::parse($data['due_date']);
         $rentAmount = $occupancy->rent_amount_at_start ?? $unit->rent_amount;
- 
+
         // Hard rule: no duplicate completed payment for this month
         $existing = Payment::where('tenant_id', $userId)
             ->where('unit_id', $unit->id)
@@ -462,15 +462,15 @@ class PaymentController extends Controller
             ->whereMonth('due_date', $dueCarbon->month)
             ->where('status', 'completed')
             ->first();
- 
+
         if ($existing) {
             return response()->json([
                 'message' => 'Rent for ' . $dueCarbon->format('F Y') . ' is already paid.',
             ], 422);
         }
- 
+
         $isAdvance = $dueCarbon->isFuture();
- 
+
         $payment = Payment::firstOrCreate(
             [
                 'tenant_id' => $userId,
@@ -489,7 +489,7 @@ class PaymentController extends Controller
                 'notes'          => null,
             ]
         );
- 
+
         $payment->update([
             'transaction_id' => $data['transaction_id'],
             'payment_method' => $data['payment_method'],
@@ -498,7 +498,7 @@ class PaymentController extends Controller
             'notes'          => ($isAdvance ? 'Advance payment. ' : '')
                               . 'Submitted by tenant, awaiting verification.',
         ]);
- 
+
         // Notify landlord
         $landlordId = optional($unit->property)->landlord_id;
         if ($landlordId) {
@@ -511,14 +511,14 @@ class PaymentController extends Controller
                 'link'    => '/landlord/payments',
             ]);
         }
- 
+
         return response()->json([
             'ok'      => true,
             'advance' => $isAdvance,
             'message' => ($isAdvance ? 'Advance payment' : 'Payment') . ' submitted. It will reflect once verified.',
         ], 201);
     }
- 
+
     // ── helper: due date = day 5 of the month ──
     private function dueDate(Carbon $anchor): Carbon
     {
@@ -529,7 +529,8 @@ class PaymentController extends Controller
      * GET /tenant/payments/{payment}/receipt
      * Streams a PDF receipt for a completed payment.
      */
-    public function downloadReceipt(Request $request, Payment $payment)
+
+      public function downloadReceipt(Request $request, Payment $payment)
     {
         if ($payment->tenant_id !== $request->user()->id) {
             abort(403, 'Not authorised.');
@@ -539,15 +540,28 @@ class PaymentController extends Controller
             abort(422, 'Receipt is only available for completed payments.');
         }
 
-        $payment->load('unit.property', 'tenant.user');
+        // Load all relationships needed by the template.
+        // tenant()->user is the actual person; unit->property gives address.
+        $payment->load([
+            'unit.property',
+            'tenant.user',
+        ]);
 
-        $pdf = Pdf::loadView('tenant.receipt', [
-            'payment'  => $payment,
-            'unit'     => $payment->unit,
-            'property' => $payment->unit->property,
+        // receipt_url on older/seeded records may be a file path like
+        // "/receipts/Pk4R8wXl.pdf" — extract just the reference portion
+        // so it's usable as a display label and safe as a filename.
+        $receiptRef = $payment->receipt_url
+            ? preg_replace('/[\/\\\]/', '-', basename($payment->receipt_url, '.pdf'))
+            : ('PMT-' . str_pad($payment->id, 4, '0', STR_PAD_LEFT));
+
+        $pdf = Pdf::loadView('exports.receipt', [
+            'payment'    => $payment,
+            'unit'       => $payment->unit,
+            'property'   => $payment->unit?->property,
+            'receiptRef' => $receiptRef,   // clean reference for display
         ])->setPaper('a4', 'portrait');
 
-        $filename = 'receipt-' . ($payment->receipt_url ?? $payment->id) . '.pdf';
+        $filename = 'receipt-' . $receiptRef . '.pdf';
 
         return $pdf->download($filename);
     }
